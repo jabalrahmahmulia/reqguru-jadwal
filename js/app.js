@@ -29,6 +29,7 @@
     rosterData: [],
     allBookings: [],
     stats: {},
+    mapelList: [],
     // Pending action for confirmations
     pendingAction: null
   };
@@ -255,6 +256,11 @@
       case 'sesi':
         state.sesiList = await api.getSesi();
         content.innerHTML = Components.renderAdminSesiTab(state.sesiList, state.adminSesiHari || 'Semua');
+        break;
+
+      case 'mapel':
+        state.mapelList = await api.getMapel();
+        content.innerHTML = Components.renderAdminMapelTab(state.mapelList);
         break;
 
       case 'monitor':
@@ -570,6 +576,27 @@
 
       case 'confirm-delete-sesi':
         handleConfirmDeleteSesi(el.dataset.id);
+        break;
+
+      // Admin Mapel
+      case 'add-mapel':
+        handleAddMapel();
+        break;
+
+      case 'edit-mapel':
+        handleEditMapel(el.dataset.mapelId);
+        break;
+
+      case 'save-mapel':
+        handleSaveMapel();
+        break;
+
+      case 'delete-mapel':
+        handleDeleteMapelPrompt(el.dataset.mapelId, el.dataset.mapelNama);
+        break;
+
+      case 'confirm-delete-mapel':
+        handleConfirmDeleteMapel(el.dataset.id);
         break;
 
       // Admin Monitor
@@ -953,8 +980,11 @@
     if (!state.sesiList || !state.sesiList.length) {
       state.sesiList = await api.getSesi();
     }
+    if (!state.mapelList || !state.mapelList.length) {
+      state.mapelList = await api.getMapel();
+    }
     Components.showModal(
-      Components.renderGuruFormModal(null, state.sesiList)
+      Components.renderGuruFormModal(null, state.sesiList, state.mapelList)
     );
   }
 
@@ -967,8 +997,11 @@
     if (!state.sesiList || !state.sesiList.length) {
       state.sesiList = await api.getSesi();
     }
+    if (!state.mapelList || !state.mapelList.length) {
+      state.mapelList = await api.getMapel();
+    }
     Components.showModal(
-      Components.renderGuruFormModal(guru, state.sesiList)
+      Components.renderGuruFormModal(guru, state.sesiList, state.mapelList)
     );
   }
 
@@ -1110,6 +1143,70 @@
     const result = await api.deleteSesi(sesiId);
     if (result) {
       await loadAdminTab('sesi');
+    }
+  }
+
+  /* ==========================================================
+     ADMIN: MAPEL CRUD
+     ========================================================== */
+  function handleAddMapel() {
+    Components.showModal(
+      Components.renderMapelFormModal(null)
+    );
+  }
+
+  function handleEditMapel(mapelId) {
+    const mapel = state.mapelList.find(function (m) { return m.id === mapelId; });
+    if (!mapel) {
+      showToast('Data mata pelajaran tidak ditemukan', 'error');
+      return;
+    }
+    Components.showModal(
+      Components.renderMapelFormModal(mapel)
+    );
+  }
+
+  async function handleSaveMapel() {
+    const form = $('#mapel-form');
+    if (!form) return;
+
+    const mapelId = form.dataset.mapelId;
+    const nama = form.querySelector('[name="nama"]').value.trim();
+
+    if (!nama) {
+      showToast('Nama mata pelajaran wajib diisi', 'warning');
+      return;
+    }
+
+    const mapelData = {
+      namaMapel: nama
+    };
+
+    Components.closeModal();
+
+    let result;
+    if (mapelId) {
+      result = await api.updateMapel(mapelId, mapelData);
+    } else {
+      result = await api.addMapel(mapelData);
+    }
+
+    if (result) {
+      await loadAdminTab('mapel');
+    }
+  }
+
+  function handleDeleteMapelPrompt(mapelId, mapelNama) {
+    Components.showModal(
+      Components.renderDeleteConfirmModal('Mata Pelajaran', mapelNama, mapelId, 'confirm-delete-mapel')
+    );
+  }
+
+  async function handleConfirmDeleteMapel(mapelId) {
+    Components.closeModal();
+    const result = await api.deleteMapel(mapelId);
+    if (result) {
+      await loadAdminTab('mapel');
     }
   }
 

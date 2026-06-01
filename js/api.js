@@ -472,6 +472,65 @@ const api = (function () {
     }
   }
 
+  // ==== MAPEL ====
+
+  /** Semua mata pelajaran */
+  async function getMapel() {
+    try {
+      const res = await get('getAllMapel');
+      return res.data || [];
+    } catch (err) {
+      showToast(err.message, 'error');
+      return [];
+    }
+  }
+
+  /** Tambah mata pelajaran */
+  async function addMapel(mapelData) {
+    showLoading('Menyimpan mata pelajaran...');
+    try {
+      const res = await post('addMapel', mapelData);
+      showToast('Mata pelajaran berhasil ditambahkan', 'success');
+      return res.data || res;
+    } catch (err) {
+      showToast(err.message, 'error');
+      return null;
+    } finally {
+      hideLoading();
+    }
+  }
+
+  /** Update mata pelajaran */
+  async function updateMapel(mapelId, mapelData) {
+    showLoading('Mengupdate mata pelajaran...');
+    try {
+      mapelData.mapelId = mapelId;
+      const res = await post('updateMapel', mapelData);
+      showToast('Mata pelajaran berhasil diperbarui', 'success');
+      return res.data || res;
+    } catch (err) {
+      showToast(err.message, 'error');
+      return null;
+    } finally {
+      hideLoading();
+    }
+  }
+
+  /** Delete mata pelajaran */
+  async function deleteMapel(mapelId) {
+    showLoading('Menghapus mata pelajaran...');
+    try {
+      const res = await post('deleteMapel', { mapelId: mapelId });
+      showToast('Mata pelajaran berhasil dihapus', 'success');
+      return res.data || res;
+    } catch (err) {
+      showToast(err.message, 'error');
+      return null;
+    } finally {
+      hideLoading();
+    }
+  }
+
   /* ---------- Public API ---------- */
   return {
     get: get,
@@ -498,6 +557,10 @@ const api = (function () {
     bulkRelease: bulkRelease,
     getRoster: getRoster,
     getKelasList: getKelasList,
-    getStats: getStats
+    getStats: getStats,
+    getMapel: getMapel,
+    addMapel: addMapel,
+    updateMapel: updateMapel,
+    deleteMapel: deleteMapel
   };
 })();

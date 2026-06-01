@@ -582,6 +582,7 @@ const Components = (function () {
     const tabs = [
       { id: 'guru', icon: '👨‍🏫', label: 'Guru' },
       { id: 'sesi', icon: '⏱', label: 'Sesi' },
+      { id: 'mapel', icon: '📚', label: 'Mapel' },
       { id: 'monitor', icon: '📡', label: 'Monitor' },
       { id: 'roster', icon: '📊', label: 'Roster' },
       { id: 'stats', icon: '📈', label: 'Statistik' }
@@ -674,7 +675,7 @@ const Components = (function () {
   }
 
   /* ---------- Admin: Guru Form Modal ---------- */
-  function renderGuruFormModal(guru, sesiList) {
+  function renderGuruFormModal(guru, sesiList, mapelList) {
     const isEdit = !!guru;
     const title = isEdit ? 'Edit Guru' : 'Tambah Guru Baru';
 
@@ -725,6 +726,11 @@ const Components = (function () {
         <label class="chip-label" for="${id}">${escapeHtml(shortKelas(k))}</label>`;
     }).join('');
 
+    const mapelOptions = (mapelList || []).map(function (m) {
+      const selected = isEdit && guru.mapel === m.nama ? 'selected' : '';
+      return `<option value="${escapeHtml(m.nama)}" ${selected}>${escapeHtml(m.nama)}</option>`;
+    }).join('');
+
     return renderModal(title, `
       <form id="guru-form" data-guru-id="${isEdit ? escapeHtml(guru.id) : ''}">
         <div class="form-group">
@@ -733,7 +739,10 @@ const Components = (function () {
         </div>
         <div class="form-group">
           <label class="form-label">Mata Pelajaran *</label>
-          <input type="text" class="form-input" name="mapel" value="${isEdit ? escapeHtml(guru.mapel || '') : ''}" required placeholder="Contoh: Matematika" />
+          <select class="form-input" name="mapel" required>
+            <option value="">-- Pilih Mata Pelajaran --</option>
+            ${mapelOptions}
+          </select>
         </div>
         <div class="form-group">
           <label class="form-label">No. HP *</label>
@@ -856,6 +865,61 @@ const Components = (function () {
     `, `
       <button class="btn btn--secondary" data-action="close-modal">Batal</button>
       <button class="btn btn--primary" data-action="save-sesi">${isEdit ? 'Update' : 'Simpan'}</button>
+    `);
+  }
+
+  /* ---------- Admin: Kelola Mapel ---------- */
+  function renderAdminMapelTab(mapelList) {
+    const rows = (mapelList || []).map(function (m, idx) {
+      return `<tr>
+        <td>${idx + 1}</td>
+        <td><strong>${escapeHtml(m.nama || '')}</strong></td>
+        <td>
+          <div class="table-actions">
+            <button class="btn btn--ghost btn--sm" data-action="edit-mapel" data-mapel-id="${escapeHtml(m.id || '')}">✏️</button>
+            <button class="btn btn--ghost btn--sm text-danger" data-action="delete-mapel" data-mapel-id="${escapeHtml(m.id || '')}" data-mapel-nama="${escapeHtml(m.nama || '')}">🗑</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    return `
+      <div class="admin-content__header">
+        <h2>📚 Kelola Mata Pelajaran</h2>
+        <button class="btn btn--primary btn--sm" data-action="add-mapel">+ Tambah Mapel</button>
+      </div>
+      <div class="data-table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nama Mata Pelajaran</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows || '<tr><td colspan="3" class="text-center text-secondary p-6">Belum ada mata pelajaran</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  /* ---------- Admin: Mapel Form Modal ---------- */
+  function renderMapelFormModal(mapel) {
+    const isEdit = !!mapel;
+    const title = isEdit ? 'Edit Mata Pelajaran' : 'Tambah Mata Pelajaran Baru';
+
+    return renderModal(title, `
+      <form id="mapel-form" data-mapel-id="${isEdit ? escapeHtml(mapel.id) : ''}">
+        <div class="form-group">
+          <label class="form-label">Nama Mata Pelajaran *</label>
+          <input type="text" class="form-input" name="nama" value="${isEdit ? escapeHtml(mapel.nama || '') : ''}" required placeholder="Contoh: Matematika" />
+        </div>
+      </form>
+    `, `
+      <button class="btn btn--secondary" data-action="close-modal">Batal</button>
+      <button class="btn btn--primary" data-action="save-mapel">${isEdit ? 'Update' : 'Simpan'}</button>
     `);
   }
 
@@ -1120,6 +1184,8 @@ const Components = (function () {
     renderGuruFormModal: renderGuruFormModal,
     renderAdminSesiTab: renderAdminSesiTab,
     renderSesiFormModal: renderSesiFormModal,
+    renderAdminMapelTab: renderAdminMapelTab,
+    renderMapelFormModal: renderMapelFormModal,
     renderAdminMonitorTab: renderAdminMonitorTab,
     renderAdminRosterTab: renderAdminRosterTab,
     renderAdminStatsTab: renderAdminStatsTab,
