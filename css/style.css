@@ -764,6 +764,19 @@ h5 { font-size: 0.95rem; font-weight: 600; line-height: 1.5; }
   transform: scale(0.95);
 }
 
+.day-tab.disabled-tab {
+  opacity: 0.5;
+  cursor: pointer;
+  background: var(--bg-secondary) !important;
+  border-color: var(--border) !important;
+  color: var(--text-secondary) !important;
+}
+
+.day-tab.disabled-tab:hover {
+  border-color: var(--border) !important;
+  color: var(--text-secondary) !important;
+}
+
 /* ---------- Booking Grid ---------- */
 .booking-grid-wrapper {
   overflow-x: auto;

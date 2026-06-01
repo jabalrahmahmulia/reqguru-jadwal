@@ -105,15 +105,27 @@ function bookSesi(guruId, hari, sesiId, kelas, noHp) {
       }
     }
 
-    // === VALIDASI 6: Cek kelas termasuk kelas guru ===
+    // === VALIDASI 6: Cek kelas termasuk kelas guru & kuota kelas ===
     var kelasGuru = String(guru['Kelas'] || '');
+    var allowedKelas = [];
+    var classQuotas = {};
     if (kelasGuru && kelasGuru.trim() !== '') {
-      var kelasArr = kelasGuru.split(',');
-      for (var k = 0; k < kelasArr.length; k++) {
-        kelasArr[k] = kelasArr[k].trim();
+      var rawKelas = kelasGuru.split(',');
+      for (var k = 0; k < rawKelas.length; k++) {
+        var item = rawKelas[k].trim();
+        if (item.indexOf(':') !== -1) {
+          var parts = item.split(':');
+          var kName = parts[0].trim();
+          var kQuota = parseInt(parts[1], 10) || 0;
+          allowedKelas.push(kName);
+          classQuotas[kName] = kQuota;
+        } else {
+          allowedKelas.push(item);
+          classQuotas[item] = 0;
+        }
       }
-      if (kelasArr.indexOf(kelas) === -1) {
-        return { success: false, data: null, message: 'Kelas "' + kelas + '" bukan kelas yang ditugaskan kepada Anda. Kelas Anda: ' + kelasGuru };
+      if (allowedKelas.indexOf(kelas) === -1) {
+        return { success: false, data: null, message: 'Kelas "' + kelas + '" bukan kelas yang ditugaskan kepada Anda. Kelas Anda: ' + allowedKelas.join(', ') };
       }
     }
 
@@ -171,6 +183,24 @@ function bookSesi(guruId, hari, sesiId, kelas, noHp) {
         data: null,
         message: 'Kuota sesi Anda sudah penuh (' + sesiTerpakai + '/' + kuotaSesi + '). Tidak bisa menambah booking baru.'
       };
+    }
+
+    // === VALIDASI 10: Cek kuota booking per kelas ===
+    var maxClassQuota = classQuotas[kelas] || 0;
+    if (maxClassQuota > 0) {
+      var classBookingsCount = 0;
+      for (var v10 = 0; v10 < activeBookings.length; v10++) {
+        if (String(activeBookings[v10]['Guru_ID']) === String(guruId) && activeBookings[v10]['Kelas'] === kelas) {
+          classBookingsCount++;
+        }
+      }
+      if (classBookingsCount >= maxClassQuota) {
+        return {
+          success: false,
+          data: null,
+          message: 'Kuota booking Anda untuk kelas ' + kelas + ' sudah penuh (' + classBookingsCount + '/' + maxClassQuota + ').'
+        };
+      }
     }
 
     // === SEMUA VALIDASI LOLOS - Proses booking ===

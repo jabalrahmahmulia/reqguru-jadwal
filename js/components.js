@@ -187,8 +187,8 @@ const Components = (function () {
     const dayTabs = CONFIG.HARI.map(function (h) {
       const allowed = allowedHari.indexOf(h) !== -1;
       const active = h === currentHari;
-      return `<button class="day-tab ${active ? 'active' : ''} ${!allowed ? 'disabled' : ''}" 
-        data-hari="${h}" ${!allowed ? 'disabled' : ''}>${h}</button>`;
+      return `<button class="day-tab ${active ? 'active' : ''} ${!allowed ? 'disabled-tab' : ''}" 
+        data-hari="${h}" data-allowed="${allowed}">${h}</button>`;
     }).join('');
 
     // Kuota info
@@ -274,12 +274,26 @@ const Components = (function () {
 
     // 2. Filter Allowed Classes (Hide disallowed ones)
     let allowedKelas = [];
+    let classQuotas = {};
     if (guru.kelas) {
+      let rawKelas = [];
       if (Array.isArray(guru.kelas)) {
-        allowedKelas = guru.kelas;
+        rawKelas = guru.kelas;
       } else if (typeof guru.kelas === 'string') {
-        allowedKelas = guru.kelas.split(',').map(function (s) { return s.trim(); });
+        rawKelas = guru.kelas.split(',').map(function (s) { return s.trim(); });
       }
+      rawKelas.forEach(function (item) {
+        if (item.indexOf(':') !== -1) {
+          const parts = item.split(':');
+          const kName = parts[0].trim();
+          const kQuota = parseInt(parts[1]) || 0;
+          allowedKelas.push(kName);
+          classQuotas[kName] = kQuota;
+        } else {
+          allowedKelas.push(item);
+          classQuotas[item] = 0;
+        }
+      });
     }
     
     // Filter the class list
@@ -299,6 +313,10 @@ const Components = (function () {
       const sesiId = sesi.id || sesi.nama;
       const timeStr = formatTimeRange(sesi.mulai, sesi.selesai);
 
+      const ownBookingInThisSesi = bookings.find(function (b) {
+        return (b.sesiId === sesiId || b.sesi === sesi.nama) && (b.guruId === guru.id || b.guruNama === guru.nama);
+      });
+
       const cells = activeKelasList.map(function (kelas) {
         const booking = bookings.find(function (b) {
           return (b.sesiId === sesiId || b.sesi === sesi.nama) && b.kelas === kelas;
@@ -315,6 +333,11 @@ const Components = (function () {
               <div class="cell__label">${escapeHtml(booking.mapel || '●')}</div>
             </td>`;
           }
+        }
+
+        // Jika guru sudah booking kelas lain di sesi & hari yang sama, nonaktifkan slot tersedia lainnya
+        if (ownBookingInThisSesi) {
+          return '<td class="cell cell--disabled" title="Anda sudah mengajar kelas lain di sesi ini"></td>';
         }
 
         return `<td class="cell cell--available" data-action="book" data-sesi="${escapeHtml(sesiId)}" data-sesi-nama="${escapeHtml(sesi.nama)}" data-kelas="${escapeHtml(kelas)}"></td>`;
@@ -807,11 +830,43 @@ const Components = (function () {
     }).join('');
 
     const kelasGuru = isEdit && guru.kelas ? (typeof guru.kelas === 'string' ? guru.kelas.split(',').map(function(k) { return k.trim(); }) : guru.kelas) : [];
+    
+    // Parse checked classes and their quotas
+    const checkedClasses = [];
+    const classQuotas = {};
+    kelasGuru.forEach(function (item) {
+      if (item.indexOf(':') !== -1) {
+        const parts = item.split(':');
+        const kName = parts[0].trim();
+        const kQuota = parseInt(parts[1]) || 0;
+        checkedClasses.push(kName);
+        classQuotas[kName] = kQuota;
+      } else {
+        checkedClasses.push(item);
+        classQuotas[item] = ''; // empty string represents no quota or default
+      }
+    });
+
     const kelasCheckboxes = CONFIG.KELAS.map(function (k) {
-      const checked = kelasGuru.indexOf(k) !== -1 ? 'checked' : '';
+      const isChecked = checkedClasses.indexOf(k) !== -1;
+      const checked = isChecked ? 'checked' : '';
+      const quotaVal = isChecked && classQuotas[k] !== undefined ? classQuotas[k] : '';
       const id = uid('kelas');
-      return `<input type="checkbox" class="chip-checkbox" id="${id}" name="kelas" value="${k}" ${checked}>
-        <label class="chip-label" for="${id}">${escapeHtml(shortKelas(k))}</label>`;
+      
+      return `
+        <div style="display:flex; justify-content:space-between; align-items:center; width:100%; padding:6px 0; border-bottom:1px solid var(--border-color)">
+          <label style="display:inline-flex; align-items:center; gap:8px; font-size:0.85rem; cursor:pointer">
+            <input type="checkbox" name="kelas" value="${k}" ${checked} style="width:14px; height:14px; cursor:pointer">
+            <span>${escapeHtml(k)}</span>
+          </label>
+          <div style="display:inline-flex; align-items:center; gap:4px">
+            <span style="font-size:0.75rem; color:var(--text-secondary)">Kuota:</span>
+            <input type="number" name="kelas_quota_${k}" value="${quotaVal}" min="0" placeholder="∞" 
+              style="width:50px; padding:3px 6px; font-size:0.75rem; border:1px solid var(--border-color); border-radius:4px; text-align:center" 
+              ${!isChecked ? 'disabled' : ''} />
+          </div>
+        </div>
+      `;
     }).join('');
 
     const mapelOptions = (mapelList || []).map(function (m) {
@@ -845,7 +900,9 @@ const Components = (function () {
             <label class="form-label" style="margin-bottom:0">Kelas yang Diampu</label>
             <button type="button" id="btn-select-all-kelas" style="background:none; border:none; color:var(--primary); font-size:0.75rem; font-weight:600; cursor:pointer">Pilih Semua Kelas</button>
           </div>
-          <div class="chip-group">${kelasCheckboxes}</div>
+          <div style="max-height: 200px; overflow-y: auto; border: 1px solid var(--border-color); padding: 12px; border-radius: 8px;">
+            ${kelasCheckboxes}
+          </div>
         </div>
         <div class="form-group">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--sp-2)">

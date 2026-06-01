@@ -248,6 +248,7 @@ function updateGuru(guruId, data) {
     if (data.nama !== undefined) guru['Nama'] = data.nama;
     if (data.mataPelajaran !== undefined) guru['Mata_Pelajaran'] = data.mataPelajaran;
     if (data.kelas !== undefined) guru['Kelas'] = data.kelas;
+    if (data.noHp !== undefined) guru['NoHP_Hash'] = cleanPhone(data.noHp);
     if (data.kuotaSesi !== undefined) guru['Kuota_Sesi'] = parseInt(data.kuotaSesi) || 0;
     if (data.hariAllowed !== undefined) guru['Hari_Allowed'] = data.hariAllowed;
     if (data.sesiAllowed !== undefined) guru['Sesi_Allowed'] = data.sesiAllowed;

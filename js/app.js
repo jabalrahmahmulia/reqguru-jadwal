@@ -398,8 +398,12 @@
 
       // Day tab click (booking page)
       const dayTab = target.closest('[data-hari]');
-      if (dayTab && !dayTab.disabled) {
-        handleDayTabClick(dayTab.dataset.hari);
+      if (dayTab) {
+        if (dayTab.dataset.allowed === 'false') {
+          showToast('Anda tidak diberi akses pada hari ' + dayTab.dataset.hari, 'warning');
+        } else {
+          handleDayTabClick(dayTab.dataset.hari);
+        }
         return;
       }
 
@@ -1042,10 +1046,16 @@
       sesiAllowed.push(cb.value);
     });
 
-    // Get kelas checkboxes if present
+    // Get kelas checkboxes and class-level quotas if present
     const kelasAllowed = [];
     form.querySelectorAll('[name="kelas"]:checked').forEach(function (cb) {
-      kelasAllowed.push(cb.value);
+      const quotaInput = form.querySelector(`input[name="kelas_quota_${cb.value}"]`);
+      const quotaVal = quotaInput ? parseInt(quotaInput.value) || 0 : 0;
+      if (quotaVal > 0) {
+        kelasAllowed.push(cb.value + ':' + quotaVal);
+      } else {
+        kelasAllowed.push(cb.value);
+      }
     });
 
     const guruData = {
@@ -1134,15 +1144,27 @@
       });
     }
 
-    // 3. Pilih Semua Kelas
+    // 3. Pilih Semua Kelas & Toggle Quota Input
     const btnSelectAllKelas = $('#btn-select-all-kelas', form);
     if (btnSelectAllKelas) {
       btnSelectAllKelas.addEventListener('click', function () {
         kelasCheckboxes.forEach(function (cb) {
           cb.checked = true;
+          const quotaInput = form.querySelector(`input[name="kelas_quota_${cb.value}"]`);
+          if (quotaInput) quotaInput.disabled = false;
         });
       });
     }
+
+    kelasCheckboxes.forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        const quotaInput = form.querySelector(`input[name="kelas_quota_${cb.value}"]`);
+        if (quotaInput) {
+          quotaInput.disabled = !cb.checked;
+          if (!cb.checked) quotaInput.value = '';
+        }
+      });
+    });
 
     // 4. Pilih Semua Sesi per Hari & Sinkronisasi Balik
     sesiGroups.forEach(function (group) {
