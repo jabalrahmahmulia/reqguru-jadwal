@@ -236,7 +236,7 @@ const api = (function () {
     showLoading('Menghapus guru...');
     try {
       const res = await post('deleteGuru', { guruId: guruId });
-      showToast('Guru berhasil dinonaktifkan', 'success');
+      showToast('Guru berhasil dihapus permanen', 'success');
       return res.data || res;
     } catch (err) {
       showToast(err.message, 'error');
