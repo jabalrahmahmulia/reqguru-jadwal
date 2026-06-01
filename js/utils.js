@@ -54,12 +54,27 @@ function createElement(tag, attrs, children) {
 /* ---------- Time Formatting ---------- */
 function formatTime(timeStr) {
   if (!timeStr) return '';
-  return timeStr;
+  const str = String(timeStr).trim();
+  if (str.indexOf('T') !== -1) {
+    try {
+      const d = new Date(str);
+      if (!isNaN(d.getTime())) {
+        const hh = String(d.getHours()).padStart(2, '0');
+        const mm = String(d.getMinutes()).padStart(2, '0');
+        return `${hh}:${mm}`;
+      }
+    } catch (e) {}
+  }
+  if (str.split(':').length >= 2) {
+    const parts = str.split(':');
+    return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+  }
+  return str;
 }
 
 function formatTimeRange(start, end) {
   if (!start || !end) return '';
-  return `${start} - ${end}`;
+  return `${formatTime(start)} - ${formatTime(end)}`;
 }
 
 /* ---------- Toast Notifications ---------- */

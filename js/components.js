@@ -765,14 +765,25 @@ const Components = (function () {
   }
 
   /* ---------- Admin: Kelola Sesi ---------- */
-  function renderAdminSesiTab(sesiList) {
-    const rows = (sesiList || []).map(function (s, idx) {
+  function renderAdminSesiTab(sesiList, activeDay) {
+    activeDay = activeDay || 'Semua';
+
+    const tabs = ['Semua', ...CONFIG.HARI].map(function (h) {
+      const active = activeDay === h ? 'active' : '';
+      return `<button class="tab-btn ${active}" data-admin-sesi-hari="${h}">${h}</button>`;
+    }).join('');
+
+    const filteredList = (activeDay === 'Semua')
+      ? (sesiList || [])
+      : (sesiList || []).filter(function (s) { return s.hari === activeDay; });
+
+    const rows = filteredList.map(function (s, idx) {
       return `<tr>
         <td>${idx + 1}</td>
         <td><span class="badge badge--orange">${escapeHtml(s.hari || '-')}</span></td>
         <td><strong>${escapeHtml(s.nama || '')}</strong></td>
-        <td>${escapeHtml(s.mulai || '-')}</td>
-        <td>${escapeHtml(s.selesai || '-')}</td>
+        <td>${escapeHtml(formatTime(s.mulai) || '-')}</td>
+        <td>${escapeHtml(formatTime(s.selesai) || '-')}</td>
         <td>
           <div class="table-actions">
             <button class="btn btn--ghost btn--sm" data-action="edit-sesi" data-sesi-id="${escapeHtml(s.id || '')}">✏️</button>
@@ -787,6 +798,14 @@ const Components = (function () {
         <h2>⏱ Kelola Sesi</h2>
         <button class="btn btn--primary btn--sm" data-action="add-sesi">+ Tambah Sesi</button>
       </div>
+
+      <!-- Filter Hari Sesi -->
+      <div class="tabs-container" style="margin-bottom: var(--sp-6); overflow-x: auto;">
+        <div class="tabs">
+          ${tabs}
+        </div>
+      </div>
+
       <div class="data-table-wrapper">
         <table class="data-table">
           <thead>
@@ -800,7 +819,7 @@ const Components = (function () {
             </tr>
           </thead>
           <tbody>
-            ${rows || '<tr><td colspan="6" class="text-center text-secondary p-6">Belum ada sesi</td></tr>'}
+            ${rows || `<tr><td colspan="6" class="text-center text-secondary p-6">Belum ada data sesi untuk ${escapeHtml(activeDay)}</td></tr>`}
           </tbody>
         </table>
       </div>

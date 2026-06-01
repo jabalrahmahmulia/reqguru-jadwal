@@ -254,7 +254,7 @@
 
       case 'sesi':
         state.sesiList = await api.getSesi();
-        content.innerHTML = Components.renderAdminSesiTab(state.sesiList);
+        content.innerHTML = Components.renderAdminSesiTab(state.sesiList, state.adminSesiHari || 'Semua');
         break;
 
       case 'monitor':
@@ -422,6 +422,13 @@
       const adminRosterDay = target.closest('[data-admin-roster-hari]');
       if (adminRosterDay) {
         handleAdminRosterDayClick(adminRosterDay.dataset.adminRosterHari);
+        return;
+      }
+
+      // Admin Sesi day tab click
+      const adminSesiTab = target.closest('[data-admin-sesi-hari]');
+      if (adminSesiTab) {
+        handleAdminSesiDayClick(adminSesiTab.dataset.adminSesiHari);
         return;
       }
 
@@ -798,6 +805,11 @@
     }
   }
 
+  function handleAdminSesiDayClick(hari) {
+    state.adminSesiHari = hari;
+    loadAdminTab('sesi');
+  }
+
   /* ==========================================================
      BOOKING ACTIONS
      ========================================================== */
@@ -1033,8 +1045,9 @@
      ADMIN: SESI CRUD
      ========================================================== */
   function handleAddSesi() {
+    const defaultDay = (state.adminSesiHari && state.adminSesiHari !== 'Semua') ? state.adminSesiHari : 'Senin';
     Components.showModal(
-      Components.renderSesiFormModal(null)
+      Components.renderSesiFormModal({ hari: defaultDay })
     );
   }
 
