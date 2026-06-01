@@ -47,8 +47,27 @@ function loginGuru(nama, noHp) {
       return { success: false, data: null, message: 'Akun guru sudah dinonaktifkan. Hubungi admin.' };
     }
 
-    // Verifikasi password (noHp plaintext, tersimpan di kolom NoHP_Hash)
-    if (cleanPhone(guru['NoHP_Hash']) !== cleanedInput) {
+    // Verifikasi password (noHp plaintext atau hash lama)
+    var isMatched = false;
+    var storedVal = String(guru['NoHP_Hash']).trim();
+    
+    if (storedVal.length === 64) {
+      var oldFormatHash = hashPassword('62' + cleanedInput);
+      if (storedVal === oldFormatHash) {
+        isMatched = true;
+        try {
+          sheet.getRange(guru['_row'], 3).setValue(cleanedInput);
+        } catch (e) {
+          Logger.log('Migration failed: ' + e.message);
+        }
+      }
+    } else {
+      if (cleanPhone(storedVal) === cleanedInput) {
+        isMatched = true;
+      }
+    }
+
+    if (!isMatched) {
       return { success: false, data: null, message: 'Nomor HP tidak cocok. Silakan coba lagi.' };
     }
 
@@ -111,7 +130,27 @@ function verifyGuru(guruId, noHp) {
       return { success: false, data: null, message: 'Akun guru sudah dinonaktifkan.' };
     }
 
-    if (cleanPhone(guru['NoHP_Hash']) !== cleanedInput) {
+    // Verifikasi password (noHp plaintext atau hash lama)
+    var isMatched = false;
+    var storedVal = String(guru['NoHP_Hash']).trim();
+    
+    if (storedVal.length === 64) {
+      var oldFormatHash = hashPassword('62' + cleanedInput);
+      if (storedVal === oldFormatHash) {
+        isMatched = true;
+        try {
+          sheet.getRange(guru['_row'], 3).setValue(cleanedInput);
+        } catch (e) {
+          Logger.log('Migration failed: ' + e.message);
+        }
+      }
+    } else {
+      if (cleanPhone(storedVal) === cleanedInput) {
+        isMatched = true;
+      }
+    }
+
+    if (!isMatched) {
       return { success: false, data: null, message: 'Nomor HP tidak cocok. Verifikasi gagal.' };
     }
 

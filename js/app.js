@@ -676,7 +676,7 @@
       return;
     }
     if (!phoneInput || !isValidPhone(phoneInput.value)) {
-      showToast('Masukkan nomor HP yang valid (format 628xxx)', 'warning');
+      showToast('Masukkan nomor HP yang valid (format 8xxxxxx)', 'warning');
       return;
     }
 
