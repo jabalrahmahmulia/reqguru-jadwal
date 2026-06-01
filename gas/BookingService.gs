@@ -317,22 +317,35 @@ function getBookingByHari(hari) {
       return { success: true, data: [], message: 'Belum ada booking.' };
     }
 
+    // Load guru phone map
+    var guruSheet = getSheet('Guru');
+    var guruPhoneMap = {};
+    if (guruSheet) {
+      var guruList = sheetToObjects(guruSheet);
+      for (var k = 0; k < guruList.length; k++) {
+        guruPhoneMap[guruList[k]['ID']] = guruList[k]['NoHP_Hash'];
+      }
+    }
+
     var bookings = sheetToObjects(sheet);
     var result = [];
 
     for (var i = 0; i < bookings.length; i++) {
       var b = bookings[i];
       if (b['Hari'] === hari && b['Status'] === 'Aktif') {
+        var gId = b['Guru_ID'];
+        var phone = cleanPhone(guruPhoneMap[gId] || '');
         result.push({
           id: b['ID'],
-          guruId: b['Guru_ID'],
+          guruId: gId,
           guruNama: b['Guru_Nama'],
           hari: b['Hari'],
           sesiId: b['Sesi_ID'],
           sesiNama: b['Sesi_Nama'],
           kelas: b['Kelas'],
           status: b['Status'],
-          waktuBooking: b['Waktu_Booking']
+          waktuBooking: b['Waktu_Booking'],
+          guruNoHp: phone
         });
       }
     }
@@ -356,22 +369,35 @@ function getAllBooking() {
       return { success: true, data: [], message: 'Belum ada booking.' };
     }
 
+    // Load guru phone map
+    var guruSheet = getSheet('Guru');
+    var guruPhoneMap = {};
+    if (guruSheet) {
+      var guruList = sheetToObjects(guruSheet);
+      for (var k = 0; k < guruList.length; k++) {
+        guruPhoneMap[guruList[k]['ID']] = guruList[k]['NoHP_Hash'];
+      }
+    }
+
     var bookings = sheetToObjects(sheet);
     var result = [];
 
     for (var i = 0; i < bookings.length; i++) {
       var b = bookings[i];
       if (b['Status'] === 'Aktif') {
+        var gId = b['Guru_ID'];
+        var phone = cleanPhone(guruPhoneMap[gId] || '');
         result.push({
           id: b['ID'],
-          guruId: b['Guru_ID'],
+          guruId: gId,
           guruNama: b['Guru_Nama'],
           hari: b['Hari'],
           sesiId: b['Sesi_ID'],
           sesiNama: b['Sesi_Nama'],
           kelas: b['Kelas'],
           status: b['Status'],
-          waktuBooking: b['Waktu_Booking']
+          waktuBooking: b['Waktu_Booking'],
+          guruNoHp: phone
         });
       }
     }

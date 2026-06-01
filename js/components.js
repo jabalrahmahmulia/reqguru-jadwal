@@ -311,7 +311,7 @@ const Components = (function () {
               <div class="cell__label">${escapeHtml(guru.mapel || '')}</div>
             </td>`;
           } else {
-            return `<td class="cell cell--booked" data-action="view-booking" data-guru-nama="${escapeHtml(booking.guruNama || '')}" data-mapel="${escapeHtml(booking.mapel || '')}" data-sesi-nama="${escapeHtml(sesi.nama)}" data-kelas="${escapeHtml(kelas)}">
+            return `<td class="cell cell--booked" data-action="view-booking" data-guru-nama="${escapeHtml(booking.guruNama || '')}" data-guru-nohp="${escapeHtml(booking.guruNoHp || '')}" data-mapel="${escapeHtml(booking.mapel || '')}" data-sesi-nama="${escapeHtml(sesi.nama)}" data-kelas="${escapeHtml(kelas)}">
               <div class="cell__label">${escapeHtml(booking.mapel || '●')}</div>
             </td>`;
           }
@@ -388,13 +388,20 @@ const Components = (function () {
   /* ==========================================================
      BOOKED BY OTHER — INFO BOTTOM SHEET
      ========================================================== */
-  function renderBookingInfoSheet(guruNama, mapel, sesiNama, kelas) {
+  function renderBookingInfoSheet(guruNama, mapel, sesiNama, kelas, guruNoHp) {
     return `
       <div class="bottom-sheet__handle"></div>
       <div class="bottom-sheet__content">
         <div class="info-popup">
           <div style="font-size:2rem;margin-bottom:var(--sp-3)">👨‍🏫</div>
-          <div class="info-popup__guru">${escapeHtml(guruNama)}</div>
+          <div class="info-popup__guru" style="display:inline-flex; align-items:center; justify-content:center; gap:8px">
+            <span>${escapeHtml(guruNama)}</span>
+            ${guruNoHp ? `
+              <a href="https://wa.me/62${escapeHtml(guruNoHp)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:4px; background-color:#25D366; color:white; padding:3px 8px; border-radius:12px; text-decoration:none; font-size:0.7rem; font-weight:600; line-height:1" title="Hubungi via WhatsApp">
+                <span style="font-size:0.8rem">💬</span> WA
+              </a>
+            ` : ''}
+          </div>
           <div class="info-popup__mapel">${escapeHtml(mapel)}</div>
           <div class="divider"></div>
           <div class="info-popup__detail">

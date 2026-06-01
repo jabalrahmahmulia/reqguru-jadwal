@@ -52,7 +52,8 @@ const api = (function () {
       kelas: b.kelas || b.Kelas,
       mapel: b.mapel || b.mataPelajaran || '',
       status: b.status || b.Status || 'Aktif',
-      waktuBooking: b.waktuBooking || b.Waktu_Booking || ''
+      waktuBooking: b.waktuBooking || b.Waktu_Booking || '',
+      guruNoHp: b.guruNoHp || b.Guru_No_HP || ''
     };
   }
 

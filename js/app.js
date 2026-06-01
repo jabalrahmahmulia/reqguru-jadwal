@@ -894,9 +894,10 @@
     const mapel = el.dataset.mapel;
     const sesiNama = el.dataset.sesiNama;
     const kelas = el.dataset.kelas;
+    const guruNoHp = el.dataset.guruNohp;
 
     Components.showBottomSheet(
-      Components.renderBookingInfoSheet(guruNama, mapel, sesiNama, kelas)
+      Components.renderBookingInfoSheet(guruNama, mapel, sesiNama, kelas, guruNoHp)
     );
   }
 
