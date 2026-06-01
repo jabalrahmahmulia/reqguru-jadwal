@@ -711,8 +711,14 @@ const Components = (function () {
       }).join('');
 
       return `
-        <div class="day-sesi-group" style="margin-top: 8px; margin-bottom: 12px;">
-          <div style="font-weight:600;font-size:0.8rem;color:var(--orange-500);margin-bottom:6px">${h}</div>
+        <div class="day-sesi-group" data-sesi-group-day="${h}" style="margin-top: 8px; margin-bottom: 12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px">
+            <span style="font-weight:600;font-size:0.8rem;color:var(--orange-500)">${h}</span>
+            <label style="font-size:0.72rem; color:var(--text-secondary); cursor:pointer; display:inline-flex; align-items:center; gap:4px">
+              <input type="checkbox" data-select-all-day="${h}" style="width:12px; height:12px; cursor:pointer">
+              Pilih Semua
+            </label>
+          </div>
           <div class="chip-group">${boxes}</div>
         </div>
       `;
@@ -753,11 +759,17 @@ const Components = (function () {
           <input type="number" class="form-input" name="kuota" value="${isEdit ? (guru.kuota || '') : ''}" min="0" placeholder="Jumlah maksimal booking" />
         </div>
         <div class="form-group">
-          <label class="form-label">Kelas yang Diampu</label>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--sp-2)">
+            <label class="form-label" style="margin-bottom:0">Kelas yang Diampu</label>
+            <button type="button" id="btn-select-all-kelas" style="background:none; border:none; color:var(--primary); font-size:0.75rem; font-weight:600; cursor:pointer">Pilih Semua Kelas</button>
+          </div>
           <div class="chip-group">${kelasCheckboxes}</div>
         </div>
         <div class="form-group">
-          <label class="form-label">Hari yang Diizinkan</label>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--sp-2)">
+            <label class="form-label" style="margin-bottom:0">Hari yang Diizinkan</label>
+            <button type="button" id="btn-select-all-hari" style="background:none; border:none; color:var(--primary); font-size:0.75rem; font-weight:600; cursor:pointer">Pilih Semua Hari</button>
+          </div>
           <div class="chip-group">${hariCheckboxes}</div>
         </div>
         <div class="form-group">

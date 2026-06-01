@@ -986,6 +986,7 @@
     Components.showModal(
       Components.renderGuruFormModal(null, state.sesiList, state.mapelList)
     );
+    setupGuruFormEvents();
   }
 
   async function handleEditGuru(guruId) {
@@ -1003,6 +1004,7 @@
     Components.showModal(
       Components.renderGuruFormModal(guru, state.sesiList, state.mapelList)
     );
+    setupGuruFormEvents();
   }
 
   async function handleSaveGuru() {
@@ -1072,6 +1074,98 @@
     if (result) {
       await loadAdminTab('guru');
     }
+  }
+
+  function setupGuruFormEvents() {
+    const form = $('#guru-form');
+    if (!form) return;
+
+    const hariCheckboxes = form.querySelectorAll('input[name="hariAllowed"]');
+    const sesiGroups = form.querySelectorAll('[data-sesi-group-day]');
+    const kelasCheckboxes = form.querySelectorAll('input[name="kelas"]');
+
+    // 1. Visibilitas Sesi berdasarkan Hari
+    function updateSesiGroupsVisibility() {
+      const checkedDays = Array.prototype.slice.call(hariCheckboxes)
+        .filter(function (cb) { return cb.checked; })
+        .map(function (cb) { return cb.value; });
+
+      sesiGroups.forEach(function (group) {
+        const day = group.dataset.sesiGroupDay;
+        const isVisible = checkedDays.indexOf(day) !== -1;
+        group.style.display = isVisible ? 'block' : 'none';
+
+        // Bersihkan centang jika hari disembunyikan
+        if (!isVisible) {
+          group.querySelectorAll('input[name="sesiAllowed"]').forEach(function (cb) {
+            cb.checked = false;
+          });
+          const selectAllCb = group.querySelector('input[data-select-all-day]');
+          if (selectAllCb) selectAllCb.checked = false;
+        }
+      });
+    }
+
+    hariCheckboxes.forEach(function (cb) {
+      cb.addEventListener('change', updateSesiGroupsVisibility);
+    });
+
+    // Jalankan inisialisasi visibilitas sesi di awal
+    updateSesiGroupsVisibility();
+
+    // 2. Pilih Semua Hari
+    const btnSelectAllHari = $('#btn-select-all-hari', form);
+    if (btnSelectAllHari) {
+      btnSelectAllHari.addEventListener('click', function () {
+        hariCheckboxes.forEach(function (cb) {
+          cb.checked = true;
+        });
+        updateSesiGroupsVisibility();
+      });
+    }
+
+    // 3. Pilih Semua Kelas
+    const btnSelectAllKelas = $('#btn-select-all-kelas', form);
+    if (btnSelectAllKelas) {
+      btnSelectAllKelas.addEventListener('click', function () {
+        kelasCheckboxes.forEach(function (cb) {
+          cb.checked = true;
+        });
+      });
+    }
+
+    // 4. Pilih Semua Sesi per Hari & Sinkronisasi Balik
+    sesiGroups.forEach(function (group) {
+      const day = group.dataset.sesiGroupDay;
+      const selectAllCb = group.querySelector('input[data-select-all-day]');
+      const sesiCbs = group.querySelectorAll('input[name="sesiAllowed"]');
+
+      if (!selectAllCb || sesiCbs.length === 0) return;
+
+      function updateSelectAllState() {
+        const total = sesiCbs.length;
+        const checkedCount = Array.prototype.slice.call(sesiCbs).filter(function (cb) {
+          return cb.checked;
+        }).length;
+        selectAllCb.checked = (total > 0 && checkedCount === total);
+      }
+
+      // Klik 'Pilih Semua' per hari
+      selectAllCb.addEventListener('change', function () {
+        const isChecked = selectAllCb.checked;
+        sesiCbs.forEach(function (cb) {
+          cb.checked = isChecked;
+        });
+      });
+
+      // Klik sesi individu memengaruhi status 'Pilih Semua' hari tersebut
+      sesiCbs.forEach(function (cb) {
+        cb.addEventListener('change', updateSelectAllState);
+      });
+
+      // Inisialisasi status 'Pilih Semua' per hari di awal (untuk mode Edit)
+      updateSelectAllState();
+    });
   }
 
   /* ==========================================================
