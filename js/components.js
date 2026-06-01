@@ -623,10 +623,24 @@ const Components = (function () {
   /* ---------- Admin: Kelola Guru ---------- */
   function renderAdminGuruTab(guruList) {
     const rows = (guruList || []).map(function (g, idx) {
-      const hariTags = (g.hariAllowed || []).map(function (h) {
+      let hariArr = [];
+      if (Array.isArray(g.hariAllowed)) {
+        hariArr = g.hariAllowed;
+      } else if (typeof g.hariAllowed === 'string' && g.hariAllowed.trim() !== '') {
+        hariArr = g.hariAllowed.split(',').map(function (s) { return s.trim(); });
+      }
+
+      let sesiArr = [];
+      if (Array.isArray(g.sesiAllowed)) {
+        sesiArr = g.sesiAllowed;
+      } else if (typeof g.sesiAllowed === 'string' && g.sesiAllowed.trim() !== '') {
+        sesiArr = g.sesiAllowed.split(',').map(function (s) { return s.trim(); });
+      }
+
+      const hariTags = hariArr.map(function (h) {
         return '<span class="tag">' + escapeHtml(h) + '</span>';
       }).join('');
-      const sesiTags = (g.sesiAllowed || []).map(function (s) {
+      const sesiTags = sesiArr.map(function (s) {
         return '<span class="tag">' + escapeHtml(s) + '</span>';
       }).join('');
 
@@ -679,8 +693,17 @@ const Components = (function () {
     const isEdit = !!guru;
     const title = isEdit ? 'Edit Guru' : 'Tambah Guru Baru';
 
+    let allowedHari = [];
+    if (isEdit && guru.hariAllowed) {
+      if (Array.isArray(guru.hariAllowed)) {
+        allowedHari = guru.hariAllowed;
+      } else if (typeof guru.hariAllowed === 'string') {
+        allowedHari = guru.hariAllowed.split(',').map(function (s) { return s.trim(); });
+      }
+    }
+
     const hariCheckboxes = CONFIG.HARI.map(function (h) {
-      const checked = isEdit && guru.hariAllowed && guru.hariAllowed.indexOf(h) !== -1 ? 'checked' : '';
+      const checked = isEdit && allowedHari.indexOf(h) !== -1 ? 'checked' : '';
       const id = uid('hari');
       return `<input type="checkbox" class="chip-checkbox" id="${id}" name="hariAllowed" value="${h}" ${checked}>
         <label class="chip-label" for="${id}">${h}</label>`;
@@ -697,13 +720,22 @@ const Components = (function () {
       }
     });
 
+    let allowedSesi = [];
+    if (isEdit && guru.sesiAllowed) {
+      if (Array.isArray(guru.sesiAllowed)) {
+        allowedSesi = guru.sesiAllowed;
+      } else if (typeof guru.sesiAllowed === 'string') {
+        allowedSesi = guru.sesiAllowed.split(',').map(function (s) { return s.trim(); });
+      }
+    }
+
     const sesiCheckboxesHtml = CONFIG.HARI.map(function (h) {
       const daySesi = sessionsByDay[h] || [];
       if (daySesi.length === 0) return '';
       
       const boxes = daySesi.map(function (s) {
         const sId = s.id || s.nama;
-        const checked = isEdit && guru.sesiAllowed && guru.sesiAllowed.indexOf(sId) !== -1 ? 'checked' : '';
+        const checked = isEdit && allowedSesi.indexOf(sId) !== -1 ? 'checked' : '';
         const id = uid('sesi');
         const timeStr = formatTimeRange(s.mulai, s.selesai);
         return `<input type="checkbox" class="chip-checkbox" id="${id}" name="sesiAllowed" value="${sId}" ${checked}>
