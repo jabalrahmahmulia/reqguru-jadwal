@@ -256,3 +256,20 @@ function validateRequired(data, fields) {
   }
   return null;
 }
+
+/**
+ * Membersihkan nomor HP agar selalu berformat 8xxxxxx.
+ * Menghapus prefix 628 atau 08 otomatis.
+ * @param {string|number} noHp - Nomor HP asal
+ * @returns {string} Nomor HP bersih
+ */
+function cleanPhone(noHp) {
+  if (!noHp) return '';
+  var cleaned = String(noHp).trim().replace(/[^0-9]/g, '');
+  if (cleaned.indexOf('628') === 0) {
+    cleaned = cleaned.substring(2);
+  } else if (cleaned.indexOf('08') === 0) {
+    cleaned = cleaned.substring(1);
+  }
+  return cleaned;
+}

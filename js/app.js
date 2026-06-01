@@ -469,19 +469,28 @@
 
     // Phone input formatting
     document.addEventListener('input', function (e) {
-      if (e.target.id === 'guru-phone') {
+      if (e.target.id === 'guru-phone' || e.target.name === 'noHp') {
         let val = e.target.value.replace(/\D/g, '');
-        if (val && !val.startsWith('62')) {
-          if (val.startsWith('0')) val = '62' + val.slice(1);
-          else if (!val.startsWith('6')) val = '62' + val;
+        
+        if (val.indexOf('08') === 0) {
+          val = val.substring(1);
         }
+        else if (val.indexOf('628') === 0) {
+          val = val.substring(2);
+        }
+        else if (val.startsWith('0') && val.length > 1) {
+          val = val.replace(/^0+/, '');
+        }
+
         e.target.value = val;
 
         // Enable/disable login button
-        const loginBtn = $('#btn-guru-login');
-        const selectedId = $('#guru-selected-id');
-        if (loginBtn) {
-          loginBtn.disabled = !(selectedId && selectedId.value && isValidPhone(val));
+        if (e.target.id === 'guru-phone') {
+          const loginBtn = $('#btn-guru-login');
+          const selectedId = $('#guru-selected-id');
+          if (loginBtn) {
+            loginBtn.disabled = !(selectedId && selectedId.value && isValidPhone(val));
+          }
         }
       }
     });

@@ -43,7 +43,8 @@ function getAllGuru() {
         sesiTerpakai: g['Sesi_Terpakai'],
         hariAllowed: g['Hari_Allowed'],
         sesiAllowed: g['Sesi_Allowed'],
-        status: g['Status']
+        status: g['Status'],
+        noHp: g['NoHP_Hash']
       });
     }
 
@@ -173,15 +174,15 @@ function addGuru(data) {
       }
     }
 
-    // Generate ID dan hash password
+    // Generate ID dan bersihkan nomor HP
     var newId = generateId('G');
-    var hashedHp = hashPassword(String(data.noHp));
+    var cleanedHp = cleanPhone(String(data.noHp));
 
     // Siapkan baris baru
     var newRow = [
       newId,
       data.nama,
-      hashedHp,
+      cleanedHp,
       data.mataPelajaran,
       data.kelas,                              // Bisa berupa string dipisah koma
       parseInt(data.kuotaSesi) || 0,
@@ -271,13 +272,56 @@ function updateGuru(guruId, data) {
 }
 
 /**
- * Menghapus guru (soft delete - set status Nonaktif).
- * Guru yang dinonaktifkan tidak bisa login atau booking.
+ * Menghapus guru secara permanen dari database sheet Guru
+ * serta menghapus seluruh data booking aktif milik guru tersebut.
  * @param {string} guruId - ID guru
  * @returns {Object} {success, data, message}
  */
 function deleteGuru(guruId) {
-  return updateGuru(guruId, { status: 'Nonaktif' });
+  var lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+    var sheet = getSheet('Guru');
+    if (!sheet) {
+      return { success: false, data: null, message: 'Sheet Guru tidak ditemukan.' };
+    }
+
+    var guruList = sheetToObjects(sheet);
+    var rowNum = -1;
+    for (var i = 0; i < guruList.length; i++) {
+      if (String(guruList[i]['ID']) === String(guruId)) {
+        rowNum = guruList[i]['_row'];
+        break;
+      }
+    }
+
+    if (rowNum === -1) {
+      return { success: false, data: null, message: 'Guru tidak ditemukan.' };
+    }
+
+    // Hapus baris dari sheet
+    sheet.deleteRow(rowNum);
+
+    // Hapus seluruh booking aktif milik guru ini agar jadwal kembali kosong
+    var bookingSheet = getSheet('Booking');
+    if (bookingSheet) {
+      var bookings = sheetToObjects(bookingSheet);
+      // Hapus dari bawah ke atas agar indeks baris tidak bergeser
+      for (var k = bookings.length - 1; k >= 0; k--) {
+        if (String(bookings[k]['Guru_ID']) === String(guruId)) {
+          bookingSheet.deleteRow(bookings[k]['_row']);
+        }
+      }
+    }
+
+    return { success: true, data: { id: guruId }, message: 'Guru berhasil dihapus dari sistem.' };
+
+  } catch (err) {
+    Logger.log('deleteGuru error: ' + err.message);
+    return { success: false, data: null, message: 'Gagal menghapus guru: ' + err.message };
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 /**
@@ -315,9 +359,9 @@ function resetPassword(guruId, newNoHp) {
       return { success: false, data: null, message: 'Guru dengan ID "' + guruId + '" tidak ditemukan.' };
     }
 
-    // Hash noHP baru dan update di kolom NoHP_Hash (kolom 3)
-    var newHash = hashPassword(String(newNoHp));
-    sheet.getRange(guru['_row'], 3).setValue(newHash);
+    // Bersihkan noHP baru dan update di kolom NoHP_Hash (kolom 3)
+    var cleanedHp = cleanPhone(String(newNoHp));
+    sheet.getRange(guru['_row'], 3).setValue(cleanedHp);
 
     return { success: true, data: { id: guruId }, message: 'Nomor HP guru berhasil direset.' };
 

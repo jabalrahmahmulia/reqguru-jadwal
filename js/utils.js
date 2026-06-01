@@ -51,6 +51,17 @@ function createElement(tag, attrs, children) {
   return el;
 }
 
+function cleanPhone(noHp) {
+  if (!noHp) return '';
+  let cleaned = String(noHp).trim().replace(/[^0-9]/g, '');
+  if (cleaned.indexOf('628') === 0) {
+    cleaned = cleaned.substring(2);
+  } else if (cleaned.indexOf('08') === 0) {
+    cleaned = cleaned.substring(1);
+  }
+  return cleaned;
+}
+
 /* ---------- Time Formatting ---------- */
 function formatTime(timeStr) {
   if (!timeStr) return '';
@@ -254,16 +265,12 @@ function escapeHtml(str) {
 
 /* ---------- Phone Number Formatting ---------- */
 function formatPhone(phone) {
-  if (!phone) return '';
-  phone = phone.replace(/\D/g, '');
-  if (phone.startsWith('0')) phone = '62' + phone.slice(1);
-  if (!phone.startsWith('62')) phone = '62' + phone;
-  return phone;
+  return cleanPhone(phone);
 }
 
 function isValidPhone(phone) {
-  const cleaned = phone.replace(/\D/g, '');
-  return cleaned.length >= 10 && cleaned.length <= 15 && cleaned.startsWith('62');
+  const cleaned = cleanPhone(phone);
+  return cleaned.length >= 8 && cleaned.length <= 13 && cleaned.startsWith('8');
 }
 
 /* ---------- Debounce ---------- */

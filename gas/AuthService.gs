@@ -27,7 +27,7 @@ function loginGuru(nama, noHp) {
     }
 
     var guruList = sheetToObjects(sheet);
-    var hashedInput = hashPassword(noHp);
+    var cleanedInput = cleanPhone(noHp);
 
     // Cari guru berdasarkan nama (case-insensitive)
     var guru = null;
@@ -47,8 +47,8 @@ function loginGuru(nama, noHp) {
       return { success: false, data: null, message: 'Akun guru sudah dinonaktifkan. Hubungi admin.' };
     }
 
-    // Verifikasi password (noHp yang di-hash)
-    if (guru['NoHP_Hash'] !== hashedInput) {
+    // Verifikasi password (noHp plaintext, tersimpan di kolom NoHP_Hash)
+    if (cleanPhone(guru['NoHP_Hash']) !== cleanedInput) {
       return { success: false, data: null, message: 'Nomor HP tidak cocok. Silakan coba lagi.' };
     }
 
@@ -92,7 +92,7 @@ function verifyGuru(guruId, noHp) {
     }
 
     var guruList = sheetToObjects(sheet);
-    var hashedInput = hashPassword(noHp);
+    var cleanedInput = cleanPhone(noHp);
 
     // Cari guru berdasarkan ID
     var guru = null;
@@ -111,7 +111,7 @@ function verifyGuru(guruId, noHp) {
       return { success: false, data: null, message: 'Akun guru sudah dinonaktifkan.' };
     }
 
-    if (guru['NoHP_Hash'] !== hashedInput) {
+    if (cleanPhone(guru['NoHP_Hash']) !== cleanedInput) {
       return { success: false, data: null, message: 'Nomor HP tidak cocok. Verifikasi gagal.' };
     }
 

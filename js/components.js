@@ -145,8 +145,8 @@ const Components = (function () {
 
             <div class="form-group" id="phone-group" style="display:none">
               <label class="form-label">Nomor HP</label>
-              <input type="tel" class="form-input form-input--lg" id="guru-phone" placeholder="628xxxxxxxxxx" maxlength="15" />
-              <p class="form-hint">Format: 628xxxxxxxxxx (tanpa + atau spasi)</p>
+              <input type="tel" class="form-input form-input--lg" id="guru-phone" placeholder="8xxxxxxxxxx" maxlength="15" />
+              <p class="form-hint">Format: 8xxxxxxxxxx (tanpa angka 62 atau 0 di depan)</p>
             </div>
 
             <button class="btn btn--primary btn--lg btn--block" id="btn-guru-login" disabled>
@@ -171,7 +171,17 @@ const Components = (function () {
 
     const initials = getInitials(guru.nama);
     const currentHari = state.currentHari || CONFIG.HARI[0];
-    const allowedHari = guru.hariAllowed || CONFIG.HARI;
+    let allowedHari = [];
+    if (guru.hariAllowed) {
+      if (Array.isArray(guru.hariAllowed)) {
+        allowedHari = guru.hariAllowed;
+      } else if (typeof guru.hariAllowed === 'string') {
+        allowedHari = guru.hariAllowed.split(',').map(function (s) { return s.trim(); });
+      }
+    }
+    if (allowedHari.length === 0) {
+      allowedHari = CONFIG.HARI;
+    }
 
     // Day tabs
     const dayTabs = CONFIG.HARI.map(function (h) {
@@ -241,7 +251,17 @@ const Components = (function () {
       return '<div class="empty-state"><div class="empty-state__icon">📋</div><div class="empty-state__title">Belum ada sesi</div></div>';
     }
 
-    const allowedSesi = guru.sesiAllowed || sesiList.map(function (s) { return s.id || s.nama; });
+    let allowedSesi = [];
+    if (guru.sesiAllowed) {
+      if (Array.isArray(guru.sesiAllowed)) {
+        allowedSesi = guru.sesiAllowed;
+      } else if (typeof guru.sesiAllowed === 'string') {
+        allowedSesi = guru.sesiAllowed.split(',').map(function (s) { return s.trim(); });
+      }
+    }
+    if (allowedSesi.length === 0) {
+      allowedSesi = sesiList.map(function (s) { return s.id || s.nama; });
+    }
 
     const headers = kelasList.map(function (k) {
       return '<th>' + escapeHtml(shortKelas(k)) + '</th>';
@@ -784,7 +804,7 @@ const Components = (function () {
         </div>
         <div class="form-group">
           <label class="form-label">No. HP *</label>
-          <input type="tel" class="form-input" name="noHp" value="${isEdit ? escapeHtml(guru.noHp || '') : ''}" required placeholder="628xxxxxxxxxx" />
+          <input type="tel" class="form-input" name="noHp" value="${isEdit ? escapeHtml(guru.noHp || '') : ''}" required placeholder="8xxxxxxxxxx" />
         </div>
         <div class="form-group">
           <label class="form-label">Kuota Booking</label>
