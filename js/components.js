@@ -191,28 +191,20 @@ const Components = (function () {
         data-hari="${h}" data-allowed="${allowed}">${h}</button>`;
     }).join('');
 
-    // Kuota info
-    const kuotaUsed = guru.kuotaUsed || 0;
-    const kuotaMax = guru.kuota || 0;
-    const kuotaPct = kuotaMax > 0 ? Math.round((kuotaUsed / kuotaMax) * 100) : 0;
-    const kuotaClass = kuotaPct >= 100 ? 'progress--danger' : kuotaPct >= 75 ? 'progress--warning' : '';
+    const kuotaWrapper = `
+      <div id="kuota-container-wrapper" style="margin-top: var(--sp-3); width: 100%;">
+        ${renderClassQuotas(guru, state.guruBookings || [])}
+      </div>
+    `;
 
     return `
       <div class="container page-enter" style="padding-top:var(--sp-6);padding-bottom:var(--sp-8)">
-        <div class="guru-info">
+        <div class="guru-info" style="align-items: flex-start;">
           <div class="guru-avatar">${initials}</div>
           <div class="guru-details">
             <div class="guru-name">${escapeHtml(guru.nama)}</div>
             <div class="guru-mapel">${escapeHtml(guru.mapel || '-')}</div>
-            <div class="kuota-bar">
-              <div class="kuota-info">
-                <span class="kuota-info__label">Kuota Booking</span>
-                <span class="kuota-info__value">${kuotaUsed} / ${kuotaMax}</span>
-              </div>
-              <div class="progress ${kuotaClass}">
-                <div class="progress__fill" style="width:${kuotaPct}%"></div>
-              </div>
-            </div>
+            ${kuotaWrapper}
           </div>
         </div>
 
@@ -710,6 +702,35 @@ const Components = (function () {
         sesiArr = g.sesiAllowed.split(',').map(function (s) { return s.trim(); });
       }
 
+      // Parse kelas and quotas
+      const allowedKelas = [];
+      const classQuotas = {};
+      if (g.kelas) {
+        let rawKelas = [];
+        if (Array.isArray(g.kelas)) {
+          rawKelas = g.kelas;
+        } else if (typeof g.kelas === 'string') {
+          rawKelas = g.kelas.split(',').map(function (s) { return s.trim(); });
+        }
+        rawKelas.forEach(function (item) {
+          if (item.indexOf(':') !== -1) {
+            const parts = item.split(':');
+            const kName = parts[0].trim();
+            const kQuota = parseInt(parts[1]) || 0;
+            allowedKelas.push(kName);
+            classQuotas[kName] = kQuota;
+          } else {
+            allowedKelas.push(item);
+            classQuotas[item] = 0;
+          }
+        });
+      }
+
+      const kelasWithQuotas = allowedKelas.map(function(k) {
+        const q = classQuotas[k] ? classQuotas[k] : '∞';
+        return shortKelas(k) + ' (' + q + ')';
+      }).join(', ');
+
       const hariTags = hariArr.map(function (h) {
         return '<span class="tag">' + escapeHtml(h) + '</span>';
       }).join('');
@@ -722,7 +743,7 @@ const Components = (function () {
         <td><strong>${escapeHtml(g.nama || '')}</strong></td>
         <td>${escapeHtml(g.mapel || '')}</td>
         <td>${escapeHtml(g.noHp || '')}</td>
-        <td>${g.kuota || '-'}</td>
+        <td><span style="font-size:0.75rem; font-weight:500; color:var(--text-secondary)">${escapeHtml(kelasWithQuotas || '-')}</span></td>
         <td><div class="tag-list">${hariTags || '-'}</div></td>
         <td><div class="tag-list">${sesiTags || '-'}</div></td>
         <td>
@@ -747,7 +768,7 @@ const Components = (function () {
               <th>Nama</th>
               <th>Mapel</th>
               <th>No. HP</th>
-              <th>Kuota</th>
+              <th>Kelas (Kuota)</th>
               <th>Hari</th>
               <th>Sesi</th>
               <th>Aksi</th>
@@ -891,10 +912,7 @@ const Components = (function () {
           <label class="form-label">No. HP *</label>
           <input type="tel" class="form-input" name="noHp" value="${isEdit ? escapeHtml(guru.noHp || '') : ''}" required placeholder="8xxxxxxxxxx" />
         </div>
-        <div class="form-group">
-          <label class="form-label">Kuota Booking</label>
-          <input type="number" class="form-input" name="kuota" value="${isEdit ? (guru.kuota || '') : ''}" min="0" placeholder="Jumlah maksimal booking" />
-        </div>
+        <input type="hidden" name="kuota" value="0" />
         <div class="form-group">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--sp-2)">
             <label class="form-label" style="margin-bottom:0">Kelas yang Diampu</label>
@@ -1298,6 +1316,73 @@ const Components = (function () {
   }
 
   /* ==========================================================
+     CLASS LEVEL QUOTAS RENDERER
+     ========================================================== */
+  function renderClassQuotas(guru, guruBookings) {
+    const allowedKelas = [];
+    const classQuotas = {};
+    if (guru.kelas) {
+      let rawKelas = [];
+      if (Array.isArray(guru.kelas)) {
+        rawKelas = guru.kelas;
+      } else if (typeof guru.kelas === 'string') {
+        rawKelas = guru.kelas.split(',').map(function (s) { return s.trim(); });
+      }
+      rawKelas.forEach(function (item) {
+        if (item.indexOf(':') !== -1) {
+          const parts = item.split(':');
+          const kName = parts[0].trim();
+          const kQuota = parseInt(parts[1]) || 0;
+          allowedKelas.push(kName);
+          classQuotas[kName] = kQuota;
+        } else {
+          allowedKelas.push(item);
+          classQuotas[item] = 0;
+        }
+      });
+    }
+
+    const classBookings = guruBookings || [];
+    const classUsed = {};
+    allowedKelas.forEach(function (kelas) {
+      classUsed[kelas] = classBookings.filter(function (b) {
+        return b.kelas === kelas;
+      }).length;
+    });
+
+    const classQuotasHtml = allowedKelas.map(function (kelas) {
+      const quota = classQuotas[kelas] || 0;
+      const used = classUsed[kelas] || 0;
+      const displayQuota = quota > 0 ? quota : '∞';
+      const isFull = quota > 0 && used >= quota;
+      const pillClass = isFull ? 'badge--danger' : used > 0 ? 'badge--warning' : 'badge--success';
+      
+      return `
+        <div style="background: var(--bg-card); border: 1.5px solid var(--border); padding: 8px 12px; border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 4px; min-width: 120px; box-shadow: var(--shadow-sm); flex-grow: 1;">
+          <span style="font-size: 0.72rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(kelas)}">${escapeHtml(shortKelas(kelas))}</span>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 2px;">
+            <span class="badge ${pillClass}" style="font-size: 0.65rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; display: inline-flex;">
+              ${used}/${displayQuota}
+            </span>
+            <span style="font-size: 0.62rem; color: ${isFull ? 'var(--danger)' : 'var(--success)'}; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em;">
+              ${isFull ? 'Penuh' : 'Slot'}
+            </span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="kuota-container-new" style="width: 100%;">
+        <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: var(--sp-2); text-transform: uppercase; letter-spacing: 0.05em;">Kuota Booking per Kelas</span>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; width: 100%;">
+          ${classQuotasHtml || '<span style="font-size: 0.8rem; color: var(--text-secondary);">Tidak ada kelas yang diampu</span>'}
+        </div>
+      </div>
+    `;
+  }
+
+  /* ==========================================================
      FORCE RELEASE CONFIRM MODAL
      ========================================================== */
   function renderForceReleaseModal(bookingId, info) {
@@ -1322,6 +1407,7 @@ const Components = (function () {
     renderLandingPage: renderLandingPage,
     renderGuruLoginPage: renderGuruLoginPage,
     renderBookingPage: renderBookingPage,
+    renderClassQuotas: renderClassQuotas,
     renderBookingGrid: renderBookingGrid,
     renderBookConfirmModal: renderBookConfirmModal,
     renderReleaseConfirmModal: renderReleaseConfirmModal,

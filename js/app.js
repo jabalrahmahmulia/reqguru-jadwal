@@ -116,6 +116,8 @@
         break;
 
       case 'booking':
+        app.innerHTML = renderSkeleton('card');
+        state.guruBookings = await api.getGuruBookings(state.currentGuru.id);
         app.innerHTML = Components.renderBookingPage(state);
         await loadBookingGrid();
         break;
@@ -965,25 +967,18 @@
     }
   }
 
-  function updateKuotaDisplay() {
+  async function updateKuotaDisplay() {
     const guru = state.currentGuru;
     if (!guru) return;
 
-    const kuotaUsed = guru.kuotaUsed || 0;
-    const kuotaMax = guru.kuota || 0;
-    const kuotaPct = kuotaMax > 0 ? Math.round((kuotaUsed / kuotaMax) * 100) : 0;
-
-    const valueEl = $('.kuota-info__value');
-    if (valueEl) valueEl.textContent = kuotaUsed + ' / ' + kuotaMax;
-
-    const fillEl = $('.progress__fill');
-    if (fillEl) fillEl.style.width = kuotaPct + '%';
-
-    const progressEl = fillEl ? fillEl.parentElement : null;
-    if (progressEl) {
-      progressEl.classList.remove('progress--danger', 'progress--warning');
-      if (kuotaPct >= 100) progressEl.classList.add('progress--danger');
-      else if (kuotaPct >= 75) progressEl.classList.add('progress--warning');
+    try {
+      state.guruBookings = await api.getGuruBookings(guru.id);
+      const wrapper = $('#kuota-container-wrapper');
+      if (wrapper) {
+        wrapper.innerHTML = Components.renderClassQuotas(guru, state.guruBookings);
+      }
+    } catch (e) {
+      console.error('Gagal mengupdate kuota display:', e);
     }
   }
 
