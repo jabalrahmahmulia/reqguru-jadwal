@@ -770,7 +770,7 @@ const Components = (function () {
 
     const tabs = ['Semua', ...CONFIG.HARI].map(function (h) {
       const active = activeDay === h ? 'active' : '';
-      return `<button class="tab-btn ${active}" data-admin-sesi-hari="${h}">${h}</button>`;
+      return `<button class="day-tab ${active}" data-admin-sesi-hari="${h}">${h}</button>`;
     }).join('');
 
     const filteredList = (activeDay === 'Semua')
@@ -800,10 +800,8 @@ const Components = (function () {
       </div>
 
       <!-- Filter Hari Sesi -->
-      <div class="tabs-container" style="margin-bottom: var(--sp-6); overflow-x: auto;">
-        <div class="tabs">
-          ${tabs}
-        </div>
+      <div class="day-tabs" style="margin-bottom: var(--sp-6)">
+        ${tabs}
       </div>
 
       <div class="data-table-wrapper">
