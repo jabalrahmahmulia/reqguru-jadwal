@@ -251,6 +251,7 @@ const Components = (function () {
       return '<div class="empty-state"><div class="empty-state__icon">📋</div><div class="empty-state__title">Belum ada sesi</div></div>';
     }
 
+    // 1. Filter Allowed Sessions (Hide disallowed ones)
     let allowedSesi = [];
     if (guru.sesiAllowed) {
       if (Array.isArray(guru.sesiAllowed)) {
@@ -259,27 +260,49 @@ const Components = (function () {
         allowedSesi = guru.sesiAllowed.split(',').map(function (s) { return s.trim(); });
       }
     }
-    if (allowedSesi.length === 0) {
-      allowedSesi = sesiList.map(function (s) { return s.id || s.nama; });
+    
+    // Filter the session list
+    const activeSesiList = sesiList.filter(function (s) {
+      const sesiId = s.id || s.nama;
+      // Jika allowedSesi kosong, berarti semua sesi diizinkan
+      return allowedSesi.length === 0 || allowedSesi.indexOf(sesiId) !== -1;
+    });
+
+    if (!activeSesiList.length) {
+      return '<div class="empty-state"><div class="empty-state__icon">🔒</div><div class="empty-state__title">Tidak ada sesi yang diizinkan untuk Anda hari ini</div></div>';
     }
 
-    const headers = kelasList.map(function (k) {
+    // 2. Filter Allowed Classes (Hide disallowed ones)
+    let allowedKelas = [];
+    if (guru.kelas) {
+      if (Array.isArray(guru.kelas)) {
+        allowedKelas = guru.kelas;
+      } else if (typeof guru.kelas === 'string') {
+        allowedKelas = guru.kelas.split(',').map(function (s) { return s.trim(); });
+      }
+    }
+    
+    // Filter the class list
+    const activeKelasList = kelasList.filter(function (k) {
+      return allowedKelas.length === 0 || allowedKelas.indexOf(k) !== -1;
+    });
+
+    if (!activeKelasList.length) {
+      return '<div class="empty-state"><div class="empty-state__icon">🔒</div><div class="empty-state__title">Tidak ada kelas yang diizinkan untuk Anda</div></div>';
+    }
+
+    const headers = activeKelasList.map(function (k) {
       return '<th>' + escapeHtml(shortKelas(k)) + '</th>';
     }).join('');
 
-    const rows = sesiList.map(function (sesi) {
+    const rows = activeSesiList.map(function (sesi) {
       const sesiId = sesi.id || sesi.nama;
-      const sesiAllowed = allowedSesi.indexOf(sesiId) !== -1;
       const timeStr = formatTimeRange(sesi.mulai, sesi.selesai);
 
-      const cells = kelasList.map(function (kelas) {
+      const cells = activeKelasList.map(function (kelas) {
         const booking = bookings.find(function (b) {
           return (b.sesiId === sesiId || b.sesi === sesi.nama) && b.kelas === kelas;
         });
-
-        if (!sesiAllowed) {
-          return '<td class="cell cell--disabled"></td>';
-        }
 
         if (booking) {
           const isOwn = booking.guruId === guru.id || booking.guruNama === guru.nama;
