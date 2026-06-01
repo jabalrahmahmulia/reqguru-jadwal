@@ -76,6 +76,9 @@ function bookSesi(guruId, hari, sesiId, kelas, noHp) {
     if (sesi['Tipe'] === 'Istirahat') {
       return { success: false, data: null, message: 'Tidak bisa booking sesi istirahat.' };
     }
+    if (sesi['Hari'] && String(sesi['Hari']) !== String(hari)) {
+      return { success: false, data: null, message: 'Hari sesi (' + sesi['Hari'] + ') tidak cocok dengan hari booking (' + hari + ').' };
+    }
 
     // === VALIDASI 4: Cek guru diizinkan di hari ini ===
     var hariAllowed = String(guru['Hari_Allowed'] || '');

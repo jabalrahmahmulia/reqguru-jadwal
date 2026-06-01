@@ -31,6 +31,7 @@ const api = (function () {
     if (!s) return s;
     return {
       id: s.id || s.ID || s.sesiId,
+      hari: s.hari || s.Hari || '',
       nama: s.namaSesi || s.nama || s.Nama_Sesi || '',
       mulai: s.jamMulai || s.mulai || s.Jam_Mulai || '',
       selesai: s.jamSelesai || s.selesai || s.Jam_Selesai || '',

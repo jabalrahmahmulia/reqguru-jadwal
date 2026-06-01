@@ -685,12 +685,36 @@ const Components = (function () {
         <label class="chip-label" for="${id}">${h}</label>`;
     }).join('');
 
-    const sesiCheckboxes = (sesiList || []).map(function (s) {
-      const sId = s.id || s.nama;
-      const checked = isEdit && guru.sesiAllowed && guru.sesiAllowed.indexOf(sId) !== -1 ? 'checked' : '';
-      const id = uid('sesi');
-      return `<input type="checkbox" class="chip-checkbox" id="${id}" name="sesiAllowed" value="${sId}" ${checked}>
-        <label class="chip-label" for="${id}">${escapeHtml(s.nama || sId)}</label>`;
+    // Group sessions by day
+    const sessionsByDay = {};
+    CONFIG.HARI.forEach(function (h) {
+      sessionsByDay[h] = [];
+    });
+    (sesiList || []).forEach(function (s) {
+      if (sessionsByDay[s.hari]) {
+        sessionsByDay[s.hari].push(s);
+      }
+    });
+
+    const sesiCheckboxesHtml = CONFIG.HARI.map(function (h) {
+      const daySesi = sessionsByDay[h] || [];
+      if (daySesi.length === 0) return '';
+      
+      const boxes = daySesi.map(function (s) {
+        const sId = s.id || s.nama;
+        const checked = isEdit && guru.sesiAllowed && guru.sesiAllowed.indexOf(sId) !== -1 ? 'checked' : '';
+        const id = uid('sesi');
+        const timeStr = formatTimeRange(s.mulai, s.selesai);
+        return `<input type="checkbox" class="chip-checkbox" id="${id}" name="sesiAllowed" value="${sId}" ${checked}>
+          <label class="chip-label" for="${id}">${escapeHtml(s.nama || sId)} (${escapeHtml(timeStr)})</label>`;
+      }).join('');
+
+      return `
+        <div class="day-sesi-group" style="margin-top: 8px; margin-bottom: 12px;">
+          <div style="font-weight:600;font-size:0.8rem;color:var(--orange-500);margin-bottom:6px">${h}</div>
+          <div class="chip-group">${boxes}</div>
+        </div>
+      `;
     }).join('');
 
     const kelasGuru = isEdit && guru.kelas ? (typeof guru.kelas === 'string' ? guru.kelas.split(',').map(function(k) { return k.trim(); }) : guru.kelas) : [];
@@ -729,7 +753,9 @@ const Components = (function () {
         </div>
         <div class="form-group">
           <label class="form-label">Sesi yang Diizinkan</label>
-          <div class="chip-group">${sesiCheckboxes}</div>
+          <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border-color); padding: 12px; border-radius: 8px;">
+            ${sesiCheckboxesHtml}
+          </div>
         </div>
       </form>
     `, `
@@ -743,6 +769,7 @@ const Components = (function () {
     const rows = (sesiList || []).map(function (s, idx) {
       return `<tr>
         <td>${idx + 1}</td>
+        <td><span class="badge badge--orange">${escapeHtml(s.hari || '-')}</span></td>
         <td><strong>${escapeHtml(s.nama || '')}</strong></td>
         <td>${escapeHtml(s.mulai || '-')}</td>
         <td>${escapeHtml(s.selesai || '-')}</td>
@@ -765,6 +792,7 @@ const Components = (function () {
           <thead>
             <tr>
               <th>#</th>
+              <th>Hari</th>
               <th>Nama Sesi</th>
               <th>Mulai</th>
               <th>Selesai</th>
@@ -772,7 +800,7 @@ const Components = (function () {
             </tr>
           </thead>
           <tbody>
-            ${rows || '<tr><td colspan="5" class="text-center text-secondary p-6">Belum ada sesi</td></tr>'}
+            ${rows || '<tr><td colspan="6" class="text-center text-secondary p-6">Belum ada sesi</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -786,6 +814,15 @@ const Components = (function () {
 
     return renderModal(title, `
       <form id="sesi-form" data-sesi-id="${isEdit ? escapeHtml(sesi.id) : ''}">
+        <div class="form-group">
+          <label class="form-label">Hari *</label>
+          <select class="form-input" name="hari" required>
+            ${CONFIG.HARI.map(function(h) {
+              const selected = isEdit && sesi.hari === h ? 'selected' : '';
+              return `<option value="${h}" ${selected}>${h}</option>`;
+            }).join('')}
+          </select>
+        </div>
         <div class="form-group">
           <label class="form-label">Nama Sesi *</label>
           <input type="text" class="form-input" name="nama" value="${isEdit ? escapeHtml(sesi.nama || '') : ''}" required placeholder="Contoh: Sesi 1" />

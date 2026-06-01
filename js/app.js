@@ -164,7 +164,9 @@
       api.getBookings(state.currentHari)
     ]);
 
-    state.sesiList = results[0];
+    state.sesiList = results[0].filter(function (s) {
+      return s.hari === state.currentHari;
+    });
     state.bookings = results[1];
 
     // Update guru kuota from bookings
@@ -199,7 +201,9 @@
       api.getBookings(state.currentRosterHari)
     ]);
 
-    state.sesiList = results[0];
+    state.sesiList = results[0].filter(function (s) {
+      return s.hari === state.currentRosterHari;
+    });
     state.rosterData = results[1];
 
     const kelasList = filterKelasByGrade(state.currentGrade);
@@ -217,7 +221,9 @@
       api.getBookings(state.adminRosterHari)
     ]);
 
-    state.sesiList = results[0];
+    state.sesiList = results[0].filter(function (s) {
+      return s.hari === state.adminRosterHari;
+    });
     state.rosterData = results[1];
 
     const kelasList = filterKelasByGrade(state.adminRosterGrade);
@@ -1048,6 +1054,7 @@
     if (!form) return;
 
     const sesiId = form.dataset.sesiId;
+    const hari = form.querySelector('[name="hari"]').value;
     const nama = form.querySelector('[name="nama"]').value.trim();
     const mulai = form.querySelector('[name="mulai"]').value;
     const selesai = form.querySelector('[name="selesai"]').value;
@@ -1058,6 +1065,7 @@
     }
 
     const sesiData = {
+      hari: hari,
       namaSesi: nama,
       jamMulai: mulai,
       jamSelesai: selesai,
