@@ -648,6 +648,7 @@ const Components = (function () {
   function renderAdminDashboard(state) {
     const activeTab = state.adminTab || 'guru';
 
+    const tabs = [
       { id: 'guru', icon: '👨‍🏫', label: 'Guru' },
       { id: 'sesi', icon: '⏱', label: 'Sesi' },
       { id: 'mapel', icon: '📚', label: 'Mapel' },
