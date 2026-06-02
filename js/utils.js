@@ -3,7 +3,7 @@
    ============================================================ */
 
 const CONFIG = {
-  GAS_URL: 'https://script.google.com/macros/s/AKfycbwKp7ZD8BVtxYDyjQPvWyEJseMUgKnYMyrqvAWJu7qar_hRWEaw9NlbUBhygsYQRkYUow/exec',
+  GAS_URL: 'https://script.google.com/macros/s/AKfycbxxsak_bMwHiapBd5lopzvd1sK-bDSpo-diRAczZMImoPYciRFGA_IXQHU00SjFo0nGtQ/exec',
   SCHOOL_NAME: 'SMP Nasional Plus',
   SCHOOL_FULL: 'Yayasan Pendidikan Jabal Rahmah Mulia',
   HARI: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'],

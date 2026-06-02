@@ -657,8 +657,7 @@ const Components = (function () {
       { id: 'mapel', icon: '📚', label: 'Mapel' },
       { id: 'kelas', icon: '🏫', label: 'Kelas' },
       { id: 'monitor', icon: '📡', label: 'Monitor' },
-      { id: 'roster', icon: '📊', label: 'Roster' },
-      { id: 'stats', icon: '📈', label: 'Statistik' }
+      { id: 'roster', icon: '📊', label: 'Roster' }
     ];
 
     const sidebarItems = tabs.map(function (t) {
