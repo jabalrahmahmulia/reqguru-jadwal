@@ -326,8 +326,9 @@ const api = (function () {
   /** Booking per hari - Backend action: getBookingByHari */
   async function getBookings(hari) {
     try {
-      const action = hari ? 'getBookingByHari' : 'getAllBooking';
-      const params = hari ? { hari: hari } : {};
+      const isSemua = !hari || hari === 'Semua';
+      const action = isSemua ? 'getAllBooking' : 'getBookingByHari';
+      const params = isSemua ? {} : { hari: hari };
       const res = await get(action, params);
       return normalizeArray(res.data || [], normalizeBooking);
     } catch (err) {
@@ -462,6 +463,51 @@ const api = (function () {
     }
   }
 
+  /** Tambah Kelas */
+  async function addKelas(namaKelas) {
+    showLoading('Menyimpan kelas...');
+    try {
+      const res = await post('addKelas', { namaKelas: namaKelas });
+      showToast('Kelas berhasil ditambahkan', 'success');
+      return res.data || res;
+    } catch (err) {
+      showToast(err.message, 'error');
+      return null;
+    } finally {
+      hideLoading();
+    }
+  }
+
+  /** Update Kelas */
+  async function updateKelas(kelasId, namaKelas) {
+    showLoading('Memperbarui kelas...');
+    try {
+      const res = await post('updateKelas', { kelasId: kelasId, namaKelas: namaKelas });
+      showToast('Kelas berhasil diperbarui', 'success');
+      return res.data || res;
+    } catch (err) {
+      showToast(err.message, 'error');
+      return null;
+    } finally {
+      hideLoading();
+    }
+  }
+
+  /** Hapus Kelas */
+  async function deleteKelas(kelasId) {
+    showLoading('Menghapus kelas...');
+    try {
+      const res = await post('deleteKelas', { kelasId: kelasId });
+      showToast('Kelas berhasil dihapus', 'success');
+      return res.data || res;
+    } catch (err) {
+      showToast(err.message, 'error');
+      return null;
+    } finally {
+      hideLoading();
+    }
+  }
+
   /** Dashboard stats - Backend action: getDashboardStats */
   async function getStats() {
     try {
@@ -562,6 +608,9 @@ const api = (function () {
     getMapel: getMapel,
     addMapel: addMapel,
     updateMapel: updateMapel,
-    deleteMapel: deleteMapel
+    deleteMapel: deleteMapel,
+    addKelas: addKelas,
+    updateKelas: updateKelas,
+    deleteKelas: deleteKelas
   };
 })();

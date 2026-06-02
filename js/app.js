@@ -37,7 +37,7 @@
   /* ==========================================================
      INITIALIZATION
      ========================================================== */
-  function init() {
+  async function init() {
     // Restore dark mode
     const savedDark = loadLocal('darkMode');
     if (savedDark) {
@@ -57,6 +57,36 @@
       state.isAdmin = true;
       state.adminPin = loadSession('adminPin');
     }
+
+    // Fetch Kelas list and populate CONFIG
+    try {
+      const kelasData = await api.getKelasList();
+      if (kelasData && kelasData.length > 0) {
+        CONFIG.KELAS = kelasData.map(k => k.namaKelas);
+      } else {
+        CONFIG.KELAS = [
+          'Kelas 7 Abu Bakar', 'Kelas 7 Umar', 'Kelas 7 Khadijah', 'Kelas 7 Aisyah',
+          'Kelas 8 Abu Bakar', 'Kelas 8 Umar Bin Khattab', 'Kelas 8 Khadijah', 'Kelas 8 Aisyah',
+          'Kelas 9 Abu Bakar', 'Kelas 9 Umar Bin Khattab', 'Kelas 9 Utsman Bin Affan', 'Kelas 9 Khadijah', 'Kelas 9 Aisyah'
+        ];
+      }
+    } catch (e) {
+      console.warn("Failed to fetch kelas, using default");
+      CONFIG.KELAS = [
+        'Kelas 7 Abu Bakar', 'Kelas 7 Umar', 'Kelas 7 Khadijah', 'Kelas 7 Aisyah',
+        'Kelas 8 Abu Bakar', 'Kelas 8 Umar Bin Khattab', 'Kelas 8 Khadijah', 'Kelas 8 Aisyah',
+        'Kelas 9 Abu Bakar', 'Kelas 9 Umar Bin Khattab', 'Kelas 9 Utsman Bin Affan', 'Kelas 9 Khadijah', 'Kelas 9 Aisyah'
+      ];
+    }
+
+    CONFIG.GRADE_MAP = { '7': [], '8': [], '9': [] };
+    CONFIG.KELAS.forEach(function(k) {
+      const match = k.match(/Kelas\s*(\d+)/i);
+      if (match && match[1]) {
+        if (!CONFIG.GRADE_MAP[match[1]]) CONFIG.GRADE_MAP[match[1]] = [];
+        CONFIG.GRADE_MAP[match[1]].push(k);
+      }
+    });
 
     // Setup navbar scroll effect
     setupNavbarScroll();
@@ -204,13 +234,14 @@
       api.getBookings(state.currentRosterHari)
     ]);
 
-    state.sesiList = results[0].filter(function (s) {
+    const isSemua = state.currentRosterHari === 'Semua';
+    state.sesiList = isSemua ? results[0] : results[0].filter(function (s) {
       return s.hari === state.currentRosterHari;
     });
     state.rosterData = results[1];
 
     const kelasList = filterKelasByGrade(state.currentGrade);
-    container.innerHTML = Components.renderRosterTable(state.sesiList, kelasList, state.rosterData);
+    container.innerHTML = Components.renderRosterTable(state.sesiList, kelasList, state.rosterData, isSemua);
   }
 
   async function loadAdminRoster() {
@@ -224,13 +255,14 @@
       api.getBookings(state.adminRosterHari)
     ]);
 
-    state.sesiList = results[0].filter(function (s) {
+    const isSemua = state.adminRosterHari === 'Semua';
+    state.sesiList = isSemua ? results[0] : results[0].filter(function (s) {
       return s.hari === state.adminRosterHari;
     });
     state.rosterData = results[1];
 
     const kelasList = filterKelasByGrade(state.adminRosterGrade);
-    container.innerHTML = Components.renderRosterTable(state.sesiList, kelasList, state.rosterData);
+    container.innerHTML = Components.renderRosterTable(state.sesiList, kelasList, state.rosterData, isSemua);
   }
 
   /* ==========================================================
@@ -263,6 +295,11 @@
       case 'mapel':
         state.mapelList = await api.getMapel();
         content.innerHTML = Components.renderAdminMapelTab(state.mapelList);
+        break;
+
+      case 'kelas':
+        state.kelasList = await api.getKelasList();
+        content.innerHTML = Components.renderAdminKelasTab(state.kelasList);
         break;
 
       case 'monitor':
@@ -612,6 +649,27 @@
 
       case 'confirm-delete-mapel':
         handleConfirmDeleteMapel(el.dataset.id);
+        break;
+
+      // Admin Kelas
+      case 'add-kelas':
+        handleAddKelas();
+        break;
+
+      case 'edit-kelas':
+        handleEditKelas(el.dataset.kelasId);
+        break;
+
+      case 'save-kelas':
+        handleSaveKelas();
+        break;
+
+      case 'delete-kelas':
+        handleDeleteKelasPrompt(el.dataset.kelasId, el.dataset.kelasNama);
+        break;
+
+      case 'confirm-delete-kelas':
+        handleConfirmDeleteKelas(el.dataset.id);
         break;
 
       // Admin Monitor
@@ -1328,6 +1386,69 @@
     const result = await api.deleteMapel(mapelId);
     if (result) {
       await loadAdminTab('mapel');
+    }
+  }
+
+  /* ==========================================================
+     ADMIN: KELAS CRUD
+     ========================================================== */
+  function handleAddKelas() {
+    Components.showModal(
+      Components.renderKelasFormModal(null)
+    );
+  }
+
+  function handleEditKelas(kelasId) {
+    const kelas = state.kelasList.find(function (k) { return k.id === kelasId; });
+    if (!kelas) {
+      showToast('Data kelas tidak ditemukan', 'error');
+      return;
+    }
+    Components.showModal(
+      Components.renderKelasFormModal(kelas)
+    );
+  }
+
+  async function handleSaveKelas() {
+    const form = $('#kelas-form');
+    if (!form) return;
+
+    const kelasId = form.dataset.kelasId;
+    const namaKelas = form.querySelector('[name="namaKelas"]').value.trim();
+
+    if (!namaKelas) {
+      showToast('Nama kelas wajib diisi', 'warning');
+      return;
+    }
+
+    Components.closeModal();
+
+    let result;
+    if (kelasId) {
+      result = await api.updateKelas(kelasId, namaKelas);
+    } else {
+      result = await api.addKelas(namaKelas);
+    }
+
+    if (result) {
+      // Refresh global CONFIG.KELAS and GRADE_MAP
+      await init(); 
+      await loadAdminTab('kelas');
+    }
+  }
+
+  function handleDeleteKelasPrompt(kelasId, kelasNama) {
+    Components.showModal(
+      Components.renderDeleteConfirmModal('Kelas', kelasNama, kelasId, 'confirm-delete-kelas')
+    );
+  }
+
+  async function handleConfirmDeleteKelas(kelasId) {
+    Components.closeModal();
+    const result = await api.deleteKelas(kelasId);
+    if (result) {
+      await init();
+      await loadAdminTab('kelas');
     }
   }
 

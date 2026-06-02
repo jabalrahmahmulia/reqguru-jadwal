@@ -7,16 +7,8 @@ const CONFIG = {
   SCHOOL_NAME: 'SMP Nasional Plus',
   SCHOOL_FULL: 'Yayasan Pendidikan Jabal Rahmah Mulia',
   HARI: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'],
-  KELAS: [
-    'Kelas 7 Abu Bakar', 'Kelas 7 Umar', 'Kelas 7 Khadijah', 'Kelas 7 Aisyah',
-    'Kelas 8 Abu Bakar', 'Kelas 8 Umar Bin Khattab', 'Kelas 8 Khadijah', 'Kelas 8 Aisyah',
-    'Kelas 9 Abu Bakar', 'Kelas 9 Umar Bin Khattab', 'Kelas 9 Utsman Bin Affan', 'Kelas 9 Khadijah', 'Kelas 9 Aisyah'
-  ],
-  GRADE_MAP: {
-    '7': ['Kelas 7 Abu Bakar', 'Kelas 7 Umar', 'Kelas 7 Khadijah', 'Kelas 7 Aisyah'],
-    '8': ['Kelas 8 Abu Bakar', 'Kelas 8 Umar Bin Khattab', 'Kelas 8 Khadijah', 'Kelas 8 Aisyah'],
-    '9': ['Kelas 9 Abu Bakar', 'Kelas 9 Umar Bin Khattab', 'Kelas 9 Utsman Bin Affan', 'Kelas 9 Khadijah', 'Kelas 9 Aisyah']
-  },
+  KELAS: [],
+  GRADE_MAP: {},
   TOAST_DURATION: 4000,
   SKELETON_DELAY: 300
 };

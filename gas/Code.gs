@@ -82,7 +82,7 @@ function doGet(e) {
       // ===================== KELAS =====================
       case 'getKelasList':
         // Daftar kelas
-        return jsonResponse_(getKelasList_());
+        return jsonResponse_(getAllKelas());
 
       // ===================== MAPEL =====================
       case 'getAllMapel':
@@ -178,6 +178,16 @@ function doPost(e) {
       case 'addMapel':
         return jsonResponse_(addMapel(params));
 
+      // ===================== KELAS (Admin) =====================
+      case 'addKelas':
+        return jsonResponse_(addKelas(params.namaKelas));
+
+      case 'updateKelas':
+        return jsonResponse_(updateKelas(params.kelasId, params.namaKelas));
+
+      case 'deleteKelas':
+        return jsonResponse_(deleteKelas(params.kelasId));
+
       case 'updateMapel':
         return jsonResponse_(updateMapel(params.mapelId, params));
 
@@ -206,29 +216,7 @@ function jsonResponse_(result) {
   return jsonResponse(result.success, result.data, result.message);
 }
 
-/**
- * Helper internal: mendapatkan daftar kelas.
- * @returns {Object} {success, data, message}
- */
-function getKelasList_() {
-  try {
-    var sheet = getSheet('Kelas');
-    if (!sheet) {
-      return { success: true, data: [], message: 'Belum ada data kelas.' };
-    }
-    var kelasList = sheetToObjects(sheet);
-    var result = [];
-    for (var i = 0; i < kelasList.length; i++) {
-      result.push({
-        id: kelasList[i]['ID'],
-        namaKelas: kelasList[i]['Nama_Kelas']
-      });
-    }
-    return { success: true, data: result, message: 'Daftar kelas berhasil diambil.' };
-  } catch (err) {
-    return { success: false, data: null, message: 'Gagal mengambil daftar kelas: ' + err.message };
-  }
-}
+
 
 // ============================================================
 // INISIALISASI SISTEM
@@ -349,8 +337,8 @@ function testSetup() {
   var sesiResult = getAllSesi();
   Logger.log('Sesi: ' + JSON.stringify(sesiResult));
 
-  // Test getKelasList
-  var kelasResult = getKelasList_();
+  // Test getAllKelas
+  var kelasResult = getAllKelas();
   Logger.log('Kelas: ' + JSON.stringify(kelasResult));
 
   // Test getDashboardStats

@@ -497,9 +497,11 @@ const Components = (function () {
     const currentHari = state.currentRosterHari || CONFIG.HARI[0];
     const currentGrade = state.currentGrade || 'Semua';
 
-    const dayTabs = CONFIG.HARI.map(function (h) {
+    const tabs = ['Semua', ...CONFIG.HARI];
+    const dayTabs = tabs.map(function (h) {
       const active = h === currentHari;
-      return `<button class="day-tab ${active ? 'active' : ''}" data-roster-hari="${h}">${h}</button>`;
+      const label = h === 'Semua' ? 'Semua Hari' : h;
+      return `<button class="day-tab ${active ? 'active' : ''}" data-roster-hari="${h}">${label}</button>`;
     }).join('');
 
     const gradePills = ['Semua', '7', '8', '9'].map(function (g) {
@@ -515,7 +517,7 @@ const Components = (function () {
 
         <div class="flex items-center justify-between flex-wrap gap-4 mb-4 no-print">
           <h2>📊 Roster Jadwal</h2>
-          <button class="btn btn--secondary btn--sm" data-action="print-roster">🖨 Cetak</button>
+          <button class="btn btn--secondary btn--sm" data-action="print-roster">⬇ Download PDF</button>
         </div>
 
         <div class="day-tabs mb-4 no-print">
@@ -533,7 +535,7 @@ const Components = (function () {
     `;
   }
 
-  function renderRosterTable(sesiList, kelasList, rosterData) {
+  function renderRosterTable(sesiList, kelasList, rosterData, isSemuaHari) {
     if (!sesiList || !sesiList.length) {
       return '<div class="empty-state"><div class="empty-state__icon">📋</div><div class="empty-state__title">Belum ada data sesi</div></div>';
     }
@@ -568,8 +570,10 @@ const Components = (function () {
         return '<td><div class="roster-cell roster-cell--empty">—</div></td>';
       }).join('');
 
+      const hariBadge = isSemuaHari ? `<div style="font-size:0.75rem;font-weight:bold;color:var(--primary);margin-bottom:2px;">${escapeHtml(sesi.hari)}</div>` : '';
       return `<tr>
         <td>
+          ${hariBadge}
           <div>${escapeHtml(sesi.nama || sesiId)}</div>
           <span class="sesi-time">${escapeHtml(timeStr)}</span>
         </td>
@@ -644,10 +648,10 @@ const Components = (function () {
   function renderAdminDashboard(state) {
     const activeTab = state.adminTab || 'guru';
 
-    const tabs = [
       { id: 'guru', icon: '👨‍🏫', label: 'Guru' },
       { id: 'sesi', icon: '⏱', label: 'Sesi' },
       { id: 'mapel', icon: '📚', label: 'Mapel' },
+      { id: 'kelas', icon: '🏫', label: 'Kelas' },
       { id: 'monitor', icon: '📡', label: 'Monitor' },
       { id: 'roster', icon: '📊', label: 'Roster' },
       { id: 'stats', icon: '📈', label: 'Statistik' }
@@ -1092,6 +1096,61 @@ const Components = (function () {
     `);
   }
 
+  /* ---------- Admin: Kelola Kelas ---------- */
+  function renderAdminKelasTab(kelasList) {
+    const rows = (kelasList || []).map(function (k, idx) {
+      return `<tr>
+        <td>${idx + 1}</td>
+        <td><strong>${escapeHtml(k.namaKelas || k.nama || '')}</strong></td>
+        <td>
+          <div class="table-actions">
+            <button class="btn btn--ghost btn--sm" data-action="edit-kelas" data-kelas-id="${escapeHtml(k.id || '')}">✏️</button>
+            <button class="btn btn--ghost btn--sm text-danger" data-action="delete-kelas" data-kelas-id="${escapeHtml(k.id || '')}" data-kelas-nama="${escapeHtml(k.namaKelas || k.nama || '')}">🗑</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    return `
+      <div class="admin-content__header">
+        <h2>🏫 Kelola Kelas</h2>
+        <button class="btn btn--primary btn--sm" data-action="add-kelas">+ Tambah Kelas</button>
+      </div>
+      <div class="data-table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nama Kelas</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows || '<tr><td colspan="3" class="text-center text-secondary p-6">Belum ada kelas</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  /* ---------- Admin: Kelas Form Modal ---------- */
+  function renderKelasFormModal(kelas) {
+    const isEdit = !!kelas;
+    const title = isEdit ? 'Edit Kelas' : 'Tambah Kelas Baru';
+
+    return renderModal(title, `
+      <form id="kelas-form" data-kelas-id="${isEdit ? escapeHtml(kelas.id) : ''}">
+        <div class="form-group">
+          <label class="form-label">Nama Kelas *</label>
+          <input type="text" class="form-input" name="namaKelas" value="${isEdit ? escapeHtml(kelas.namaKelas || kelas.nama || '') : ''}" required placeholder="Contoh: Kelas 7 Abu Bakar" />
+        </div>
+      </form>
+    `, `
+      <button class="btn btn--secondary" data-action="close-modal">Batal</button>
+      <button class="btn btn--primary" data-action="save-kelas">${isEdit ? 'Update' : 'Simpan'}</button>
+    `);
+  }
+
   /* ---------- Admin: Monitor Booking ---------- */
   function renderAdminMonitorTab(bookings) {
     const rows = (bookings || []).map(function (b, idx) {
@@ -1141,8 +1200,11 @@ const Components = (function () {
     const currentHari = state.adminRosterHari || CONFIG.HARI[0];
     const currentGrade = state.adminRosterGrade || 'Semua';
 
-    const dayTabs = CONFIG.HARI.map(function (h) {
-      return `<button class="day-tab ${h === currentHari ? 'active' : ''}" data-admin-roster-hari="${h}">${h}</button>`;
+    const tabs = ['Semua', ...CONFIG.HARI];
+    const dayTabs = tabs.map(function (h) {
+      const active = h === currentHari;
+      const label = h === 'Semua' ? 'Semua Hari' : h;
+      return `<button class="day-tab ${active ? 'active' : ''}" data-admin-roster-hari="${h}">${label}</button>`;
     }).join('');
 
     const gradePills = ['Semua', '7', '8', '9'].map(function (g) {
@@ -1154,7 +1216,7 @@ const Components = (function () {
     return `
       <div class="admin-content__header">
         <h2>📊 Roster</h2>
-        <button class="btn btn--secondary btn--sm" data-action="print-roster">🖨 Cetak</button>
+        <button class="btn btn--secondary btn--sm" data-action="print-roster">⬇ Download PDF</button>
       </div>
       <div class="day-tabs mb-4">${dayTabs}</div>
       <div class="grade-filter mb-4">${gradePills}</div>
@@ -1423,6 +1485,8 @@ const Components = (function () {
     renderSesiFormModal: renderSesiFormModal,
     renderAdminMapelTab: renderAdminMapelTab,
     renderMapelFormModal: renderMapelFormModal,
+    renderAdminKelasTab: renderAdminKelasTab,
+    renderKelasFormModal: renderKelasFormModal,
     renderAdminMonitorTab: renderAdminMonitorTab,
     renderAdminRosterTab: renderAdminRosterTab,
     renderAdminStatsTab: renderAdminStatsTab,
