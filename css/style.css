@@ -2251,6 +2251,13 @@ h5 { font-size: 0.95rem; font-weight: 600; line-height: 1.5; }
     display: none !important;
   }
 
+  .print-title,
+  .print-subtitle,
+  .print-meta {
+    display: block !important;
+    text-align: center;
+  }
+
   #app { padding-top: 0; }
 
   .roster-wrapper,

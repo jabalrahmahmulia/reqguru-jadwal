@@ -1,0 +1,13 @@
+{
+  "name": "gas",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "go": "clasp push && clasp deploy -i AKfycbwKp7ZD8BVtxYDyjQPvWyEJseMUgKnYMyrqvAWJu7qar_hRWEaw9NlbUBhygsYQRkYUow"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

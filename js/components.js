@@ -513,7 +513,10 @@ const Components = (function () {
     return `
       <div class="container page-enter" style="padding-top:var(--sp-6);padding-bottom:var(--sp-8)">
         <div class="print-title">${CONFIG.SCHOOL_NAME} — ${CONFIG.SCHOOL_FULL}</div>
-        <div class="print-subtitle">Roster Jadwal Mengajar</div>
+        <div class="print-subtitle">Roster Jadwal Mengajar Tahun Ajaran ${new Date().getFullYear()}/${new Date().getFullYear()+1}</div>
+        <div class="print-meta" style="display:none; text-align:center; margin-bottom:20px; font-weight:bold;">
+          Hari: ${currentHari} | Tingkat: ${currentGrade === 'Semua' ? 'Semua Kelas' : 'Kelas ' + currentGrade}
+        </div>
 
         <div class="flex items-center justify-between flex-wrap gap-4 mb-4 no-print">
           <h2>📊 Roster Jadwal</h2>
@@ -1219,8 +1222,13 @@ const Components = (function () {
         <h2>📊 Roster</h2>
         <button class="btn btn--secondary btn--sm" data-action="print-roster">⬇ Download PDF</button>
       </div>
-      <div class="day-tabs mb-4">${dayTabs}</div>
-      <div class="grade-filter mb-4">${gradePills}</div>
+      <div class="print-title" style="display:none;">${CONFIG.SCHOOL_NAME} — ${CONFIG.SCHOOL_FULL}</div>
+      <div class="print-subtitle" style="display:none;">Roster Jadwal Mengajar Tahun Ajaran ${new Date().getFullYear()}/${new Date().getFullYear()+1}</div>
+      <div class="print-meta" style="display:none; text-align:center; margin-bottom:20px; font-weight:bold;">
+        Hari: ${currentHari} | Tingkat: ${currentGrade === 'Semua' ? 'Semua Kelas' : 'Kelas ' + currentGrade}
+      </div>
+      <div class="day-tabs mb-4 no-print">${dayTabs}</div>
+      <div class="grade-filter mb-4 no-print">${gradePills}</div>
       <div class="roster-wrapper" id="admin-roster-container">
         ${renderSkeleton('grid')}
       </div>

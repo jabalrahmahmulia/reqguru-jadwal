@@ -347,13 +347,15 @@ function getBookingByHari(hari) {
       return { success: true, data: [], message: 'Belum ada booking.' };
     }
 
-    // Load guru phone map
+    // Load guru phone and mapel map
     var guruSheet = getSheet('Guru');
     var guruPhoneMap = {};
+    var guruMapelMap = {};
     if (guruSheet) {
       var guruList = sheetToObjects(guruSheet);
       for (var k = 0; k < guruList.length; k++) {
         guruPhoneMap[guruList[k]['ID']] = guruList[k]['NoHP_Hash'];
+        guruMapelMap[guruList[k]['ID']] = guruList[k]['Mapel'];
       }
     }
 
@@ -375,7 +377,8 @@ function getBookingByHari(hari) {
           kelas: b['Kelas'],
           status: b['Status'],
           waktuBooking: b['Waktu_Booking'],
-          guruNoHp: phone
+          guruNoHp: phone,
+          mapel: guruMapelMap[gId] || ''
         });
       }
     }
@@ -399,13 +402,15 @@ function getAllBooking() {
       return { success: true, data: [], message: 'Belum ada booking.' };
     }
 
-    // Load guru phone map
+    // Load guru phone and mapel map
     var guruSheet = getSheet('Guru');
     var guruPhoneMap = {};
+    var guruMapelMap = {};
     if (guruSheet) {
       var guruList = sheetToObjects(guruSheet);
       for (var k = 0; k < guruList.length; k++) {
         guruPhoneMap[guruList[k]['ID']] = guruList[k]['NoHP_Hash'];
+        guruMapelMap[guruList[k]['ID']] = guruList[k]['Mapel'];
       }
     }
 
@@ -427,7 +432,8 @@ function getAllBooking() {
           kelas: b['Kelas'],
           status: b['Status'],
           waktuBooking: b['Waktu_Booking'],
-          guruNoHp: phone
+          guruNoHp: phone,
+          mapel: guruMapelMap[gId] || ''
         });
       }
     }
@@ -456,6 +462,15 @@ function getGuruSchedule(guruId) {
       return { success: true, data: [], message: 'Belum ada booking.' };
     }
 
+    var guruSheet = getSheet('Guru');
+    var guruMapelMap = {};
+    if (guruSheet) {
+      var guruList = sheetToObjects(guruSheet);
+      for (var k = 0; k < guruList.length; k++) {
+        guruMapelMap[guruList[k]['ID']] = guruList[k]['Mapel'];
+      }
+    }
+
     var bookings = sheetToObjects(sheet);
     var result = [];
 
@@ -471,7 +486,8 @@ function getGuruSchedule(guruId) {
           sesiNama: b['Sesi_Nama'],
           kelas: b['Kelas'],
           status: b['Status'],
-          waktuBooking: b['Waktu_Booking']
+          waktuBooking: b['Waktu_Booking'],
+          mapel: guruMapelMap[b['Guru_ID']] || ''
         });
       }
     }
