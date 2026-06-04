@@ -81,7 +81,7 @@
 
     CONFIG.GRADE_MAP = { '7': [], '8': [], '9': [] };
     CONFIG.KELAS.forEach(function(k) {
-      const match = k.match(/Kelas\s*(\d+)/i);
+      const match = k.match(/(?:Kelas|Class)?\s*(\d+)/i);
       if (match && match[1]) {
         if (!CONFIG.GRADE_MAP[match[1]]) CONFIG.GRADE_MAP[match[1]] = [];
         CONFIG.GRADE_MAP[match[1]].push(k);

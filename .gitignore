@@ -1,0 +1,13 @@
+# Google Apps Script folder (Keep local only)
+gas/
+
+# Node modules
+node_modules/
+package-lock.json
+
+# Local env files
+.env*.local
+
+# Logs
+*.log
+npm-debug.log*
