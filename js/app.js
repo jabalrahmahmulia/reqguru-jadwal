@@ -148,6 +148,20 @@
       case 'booking':
         app.innerHTML = renderSkeleton('card');
         state.guruBookings = await api.getGuruBookings(state.currentGuru.id);
+        
+        // Auto-select first allowed day on load
+        if (state.currentGuru) {
+          let allowed = [];
+          if (Array.isArray(state.currentGuru.hariAllowed)) {
+            allowed = state.currentGuru.hariAllowed;
+          } else if (typeof state.currentGuru.hariAllowed === 'string' && state.currentGuru.hariAllowed.trim() !== '') {
+            allowed = state.currentGuru.hariAllowed.split(',').map(function (s) { return s.trim(); });
+          }
+          if (allowed.length > 0) {
+            state.currentHari = allowed[0];
+          }
+        }
+
         app.innerHTML = Components.renderBookingPage(state);
         await loadBookingGrid();
         break;
@@ -510,7 +524,7 @@
       }
     });
 
-    // Phone input formatting
+    // Input listeners (Phone input formatting & Admin Guru Search)
     document.addEventListener('input', function (e) {
       if (e.target.id === 'guru-phone' || e.target.name === 'noHp') {
         let val = e.target.value.replace(/\D/g, '');
@@ -535,6 +549,16 @@
             loginBtn.disabled = !(selectedId && selectedId.value && isValidPhone(val));
           }
         }
+      } else if (e.target.id === 'admin-guru-search') {
+        const query = e.target.value.trim().toLowerCase();
+        const rows = $$('#admin-content .data-table tbody tr');
+        rows.forEach(function (row) {
+          if (row.cells.length === 1) return; // Skip fallback row
+          const name = (row.cells[1].textContent || '').toLowerCase();
+          const mapel = (row.cells[2].textContent || '').toLowerCase();
+          const match = name.indexOf(query) !== -1 || mapel.indexOf(query) !== -1;
+          row.style.display = match ? '' : 'none';
+        });
       }
     });
   }

@@ -319,15 +319,15 @@ const Components = (function () {
           if (isOwn) {
             return `<td class="cell cell--own" data-action="release" data-sesi="${escapeHtml(sesiId)}" data-sesi-nama="${escapeHtml(sesi.nama)}" data-kelas="${escapeHtml(kelas)}">
               <div class="cell__label" style="white-space:normal; line-height:1.1; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px; height:100%;">
-                <span style="font-weight:700; font-size:0.68rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; text-align:center;">${escapeHtml(booking.guruNama || guru.nama)}</span>
-                <span style="font-size:0.58rem; opacity:0.85; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; text-align:center;">${escapeHtml(booking.mapel || guru.mapel || '')}</span>
+                <span style="font-weight:700; font-size:0.68rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; text-align:center;">${escapeHtml(booking.mapel || guru.mapel || '')}</span>
+                <span style="font-size:0.58rem; opacity:0.85; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; text-align:center;">${escapeHtml(booking.guruNama || guru.nama)}</span>
               </div>
             </td>`;
           } else {
             return `<td class="cell cell--booked" data-action="view-booking" data-guru-nama="${escapeHtml(booking.guruNama || '')}" data-guru-nohp="${escapeHtml(booking.guruNoHp || '')}" data-mapel="${escapeHtml(booking.mapel || '')}" data-sesi-nama="${escapeHtml(sesi.nama)}" data-kelas="${escapeHtml(kelas)}">
               <div class="cell__label" style="white-space:normal; line-height:1.1; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px; height:100%;">
-                <span style="font-weight:700; font-size:0.68rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; text-align:center;">${escapeHtml(booking.guruNama || '')}</span>
-                <span style="font-size:0.58rem; opacity:0.85; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; text-align:center;">${escapeHtml(booking.mapel || '')}</span>
+                <span style="font-weight:700; font-size:0.68rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; text-align:center;">${escapeHtml(booking.mapel || '')}</span>
+                <span style="font-size:0.58rem; opacity:0.85; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; text-align:center;">${escapeHtml(booking.guruNama || '')}</span>
               </div>
             </td>`;
           }
@@ -771,7 +771,11 @@ const Components = (function () {
     return `
       <div class="admin-content__header">
         <h2>👨‍🏫 Kelola Guru</h2>
-        <button class="btn btn--primary btn--sm" data-action="add-guru">+ Tambah Guru</button>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <input type="text" id="admin-guru-search" placeholder="Cari guru atau mapel..." 
+            style="padding:6px 12px; border:1.5px solid var(--border); border-radius:var(--radius-md); background:var(--bg-card); color:var(--text); font-size:0.85rem; width:220px; outline:none;" />
+          <button class="btn btn--primary btn--sm" data-action="add-guru">+ Tambah Guru</button>
+        </div>
       </div>
       <div class="data-table-wrapper">
         <table class="data-table">
