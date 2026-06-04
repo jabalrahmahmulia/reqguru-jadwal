@@ -318,11 +318,17 @@ const Components = (function () {
           const isOwn = booking.guruId === guru.id || booking.guruNama === guru.nama;
           if (isOwn) {
             return `<td class="cell cell--own" data-action="release" data-sesi="${escapeHtml(sesiId)}" data-sesi-nama="${escapeHtml(sesi.nama)}" data-kelas="${escapeHtml(kelas)}">
-              <div class="cell__label">${escapeHtml(guru.mapel || '')}</div>
+              <div class="cell__label" style="white-space:normal; line-height:1.1; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px; height:100%;">
+                <span style="font-weight:700; font-size:0.68rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; text-align:center;">${escapeHtml(booking.guruNama || guru.nama)}</span>
+                <span style="font-size:0.58rem; opacity:0.85; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; text-align:center;">${escapeHtml(booking.mapel || guru.mapel || '')}</span>
+              </div>
             </td>`;
           } else {
             return `<td class="cell cell--booked" data-action="view-booking" data-guru-nama="${escapeHtml(booking.guruNama || '')}" data-guru-nohp="${escapeHtml(booking.guruNoHp || '')}" data-mapel="${escapeHtml(booking.mapel || '')}" data-sesi-nama="${escapeHtml(sesi.nama)}" data-kelas="${escapeHtml(kelas)}">
-              <div class="cell__label">${escapeHtml(booking.mapel || '●')}</div>
+              <div class="cell__label" style="white-space:normal; line-height:1.1; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px; height:100%;">
+                <span style="font-weight:700; font-size:0.68rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; text-align:center;">${escapeHtml(booking.guruNama || '')}</span>
+                <span style="font-size:0.58rem; opacity:0.85; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; text-align:center;">${escapeHtml(booking.mapel || '')}</span>
+              </div>
             </td>`;
           }
         }
