@@ -68,13 +68,7 @@ const Components = (function () {
           <div class="hero__shape"></div>
         </div>
         <div class="hero__content">
-          <div class="hero__badge">
-            ✨ Sistem Booking Jadwal Digital
-          </div>
-          <h1 class="hero__title">
-            Atur Jadwal Mengajar
-            <span class="hero__title-gradient">Lebih Mudah</span>
-          </h1>
+          <img src="https://jrm.sch.id/wp-content/uploads/2024/10/logo-jrm-png-150x150.png" alt="Logo Sekolah" style="margin: 0 auto 2rem; display: block; max-width: 150px;" />
           <p class="hero__subtitle">
             Sistem booking jadwal guru ${CONFIG.SCHOOL_NAME} — ${CONFIG.SCHOOL_FULL}. 
             Pilih sesi, kelas, dan hari dengan mudah dalam satu platform.
@@ -86,23 +80,6 @@ const Components = (function () {
             <a href="#admin-login" class="btn btn--accent btn--xl hero__cta">
               🔐 Admin Panel
             </a>
-          </div>
-          <div class="hero__features">
-            <div class="hero__feature">
-              <div class="hero__feature-icon">⚡</div>
-              <div class="hero__feature-title">Cepat & Mudah</div>
-              <div class="hero__feature-desc">Booking dalam hitungan detik</div>
-            </div>
-            <div class="hero__feature">
-              <div class="hero__feature-icon">📊</div>
-              <div class="hero__feature-title">Roster Lengkap</div>
-              <div class="hero__feature-desc">Lihat jadwal semua kelas</div>
-            </div>
-            <div class="hero__feature">
-              <div class="hero__feature-icon">📱</div>
-              <div class="hero__feature-title">Mobile Friendly</div>
-              <div class="hero__feature-desc">Akses dari mana saja</div>
-            </div>
           </div>
         </div>
       </div>

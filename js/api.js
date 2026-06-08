@@ -8,6 +8,9 @@
 const api = (function () {
   'use strict';
 
+  /* ---------- Frontend Cache ---------- */
+  const memoryCache = {};
+
   /* ---------- Field Normalization ---------- */
   // Backend uses full names (mataPelajaran, kuotaSesi, etc.)
   // Frontend components use short names (mapel, kuota, etc.)
@@ -132,10 +135,13 @@ const api = (function () {
 
   /** Daftar guru untuk dropdown login (id + nama only) */
   async function getGuruList() {
+    if (memoryCache['getGuruList']) return memoryCache['getGuruList'];
     showLoading('Memuat data guru...');
     try {
       const res = await get('getGuruList');
-      return normalizeArray(res.data || [], normalizeGuru);
+      const data = normalizeArray(res.data || [], normalizeGuru);
+      memoryCache['getGuruList'] = data;
+      return data;
     } catch (err) {
       showToast(err.message, 'error');
       return [];
@@ -178,10 +184,13 @@ const api = (function () {
 
   /** Semua guru dengan detail lengkap (admin) */
   async function getAllGuru() {
+    if (memoryCache['getAllGuru']) return memoryCache['getAllGuru'];
     showLoading('Memuat data guru...');
     try {
       const res = await get('getAllGuru');
-      return normalizeArray(res.data || [], normalizeGuru);
+      const data = normalizeArray(res.data || [], normalizeGuru);
+      memoryCache['getAllGuru'] = data;
+      return data;
     } catch (err) {
       showToast(err.message, 'error');
       return [];
@@ -207,6 +216,8 @@ const api = (function () {
     try {
       const res = await post('addGuru', guruData);
       showToast('Guru berhasil ditambahkan', 'success');
+      delete memoryCache['getAllGuru'];
+      delete memoryCache['getGuruList'];
       return res.data || res;
     } catch (err) {
       showToast(err.message, 'error');
@@ -223,6 +234,8 @@ const api = (function () {
       guruData.guruId = guruId;
       const res = await post('updateGuru', guruData);
       showToast('Data guru berhasil diupdate', 'success');
+      delete memoryCache['getAllGuru'];
+      delete memoryCache['getGuruList'];
       return res.data || res;
     } catch (err) {
       showToast(err.message, 'error');
@@ -238,6 +251,8 @@ const api = (function () {
     try {
       const res = await post('deleteGuru', { guruId: guruId });
       showToast('Guru berhasil dihapus permanen', 'success');
+      delete memoryCache['getAllGuru'];
+      delete memoryCache['getGuruList'];
       return res.data || res;
     } catch (err) {
       showToast(err.message, 'error');
@@ -266,9 +281,12 @@ const api = (function () {
 
   /** Semua sesi - Backend action: getAllSesi */
   async function getSesi() {
+    if (memoryCache['getAllSesi']) return memoryCache['getAllSesi'];
     try {
       const res = await get('getAllSesi');
-      return normalizeArray(res.data || [], normalizeSesi);
+      const data = normalizeArray(res.data || [], normalizeSesi);
+      memoryCache['getAllSesi'] = data;
+      return data;
     } catch (err) {
       showToast(err.message, 'error');
       return [];
@@ -281,6 +299,7 @@ const api = (function () {
     try {
       const res = await post('addSesi', sesiData);
       showToast('Sesi berhasil ditambahkan', 'success');
+      delete memoryCache['getAllSesi'];
       return res.data || res;
     } catch (err) {
       showToast(err.message, 'error');
@@ -297,6 +316,7 @@ const api = (function () {
       sesiData.sesiId = sesiId;
       const res = await post('updateSesi', sesiData);
       showToast('Sesi berhasil diupdate', 'success');
+      delete memoryCache['getAllSesi'];
       return res.data || res;
     } catch (err) {
       showToast(err.message, 'error');
@@ -312,6 +332,7 @@ const api = (function () {
     try {
       const res = await post('deleteSesi', { sesiId: sesiId });
       showToast('Sesi berhasil dihapus', 'success');
+      delete memoryCache['getAllSesi'];
       return res.data || res;
     } catch (err) {
       showToast(err.message, 'error');
@@ -454,9 +475,12 @@ const api = (function () {
 
   /** Kelas list - Backend action: getKelasList */
   async function getKelasList() {
+    if (memoryCache['getKelasList']) return memoryCache['getKelasList'];
     try {
       const res = await get('getKelasList');
-      return res.data || [];
+      const data = res.data || [];
+      memoryCache['getKelasList'] = data;
+      return data;
     } catch (err) {
       showToast(err.message, 'error');
       return [];
@@ -469,6 +493,7 @@ const api = (function () {
     try {
       const res = await post('addKelas', { namaKelas: namaKelas });
       showToast('Kelas berhasil ditambahkan', 'success');
+      delete memoryCache['getKelasList'];
       return res.data || res;
     } catch (err) {
       showToast(err.message, 'error');
@@ -484,6 +509,7 @@ const api = (function () {
     try {
       const res = await post('updateKelas', { kelasId: kelasId, namaKelas: namaKelas });
       showToast('Kelas berhasil diperbarui', 'success');
+      delete memoryCache['getKelasList'];
       return res.data || res;
     } catch (err) {
       showToast(err.message, 'error');
@@ -499,6 +525,7 @@ const api = (function () {
     try {
       const res = await post('deleteKelas', { kelasId: kelasId });
       showToast('Kelas berhasil dihapus', 'success');
+      delete memoryCache['getKelasList'];
       return res.data || res;
     } catch (err) {
       showToast(err.message, 'error');
@@ -523,9 +550,12 @@ const api = (function () {
 
   /** Semua mata pelajaran */
   async function getMapel() {
+    if (memoryCache['getAllMapel']) return memoryCache['getAllMapel'];
     try {
       const res = await get('getAllMapel');
-      return res.data || [];
+      const data = res.data || [];
+      memoryCache['getAllMapel'] = data;
+      return data;
     } catch (err) {
       showToast(err.message, 'error');
       return [];
@@ -538,6 +568,7 @@ const api = (function () {
     try {
       const res = await post('addMapel', mapelData);
       showToast('Mata pelajaran berhasil ditambahkan', 'success');
+      delete memoryCache['getAllMapel'];
       return res.data || res;
     } catch (err) {
       showToast(err.message, 'error');
@@ -554,6 +585,7 @@ const api = (function () {
       mapelData.mapelId = mapelId;
       const res = await post('updateMapel', mapelData);
       showToast('Mata pelajaran berhasil diperbarui', 'success');
+      delete memoryCache['getAllMapel'];
       return res.data || res;
     } catch (err) {
       showToast(err.message, 'error');
@@ -569,6 +601,7 @@ const api = (function () {
     try {
       const res = await post('deleteMapel', { mapelId: mapelId });
       showToast('Mata pelajaran berhasil dihapus', 'success');
+      delete memoryCache['getAllMapel'];
       return res.data || res;
     } catch (err) {
       showToast(err.message, 'error');
