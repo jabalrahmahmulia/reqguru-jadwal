@@ -716,24 +716,52 @@ const Components = (function () {
         });
       }
 
-      const kelasWithQuotas = allowedKelas.map(function(k) {
-        const q = classQuotas[k] ? classQuotas[k] : '∞';
-        return shortKelas(k) + ' (' + q + ')';
-      }).join(', ');
+      let kelasWithQuotasHtml = '-';
+      if (allowedKelas.length > 0) {
+        const fullList = allowedKelas.map(function(k) {
+          const q = classQuotas[k] ? classQuotas[k] : '∞';
+          return shortKelas(k) + ' (' + q + ')';
+        });
+        
+        if (fullList.length > 4) {
+          const visible = fullList.slice(0, 4).join(', ');
+          const hidden = fullList.slice(4).join(', ');
+          kelasWithQuotasHtml = `<span title="${escapeHtml(hidden)}">${escapeHtml(visible)} <span style="color:var(--primary); font-weight:bold; cursor:help;">+${fullList.length - 4}</span></span>`;
+        } else {
+          kelasWithQuotasHtml = escapeHtml(fullList.join(', '));
+        }
+      }
 
-      const hariTags = hariArr.map(function (h) {
-        return '<span class="tag">' + escapeHtml(h) + '</span>';
-      }).join('');
-      const sesiTags = sesiArr.map(function (s) {
-        return '<span class="tag">' + escapeHtml(s) + '</span>';
-      }).join('');
+      let hariTags = '-';
+      if (hariArr.length > 0) {
+        if (hariArr.length === 6) { // Asumsi 6 hari (Senin-Sabtu)
+          hariTags = `<span class="tag" style="background:var(--info-light); color:var(--info); border-color:var(--info);">Semua Hari (${hariArr.length})</span>`;
+        } else if (hariArr.length > 3) {
+          const visible = hariArr.slice(0, 3).map(function(h) { return '<span class="tag">' + escapeHtml(h) + '</span>'; }).join('');
+          const hidden = hariArr.slice(3).join(', ');
+          hariTags = visible + `<span class="tag" style="background:var(--border-light); color:var(--text-secondary); cursor:help;" title="${escapeHtml(hidden)}">+${hariArr.length - 3}</span>`;
+        } else {
+          hariTags = hariArr.map(function(h) { return '<span class="tag">' + escapeHtml(h) + '</span>'; }).join('');
+        }
+      }
+
+      let sesiTags = '-';
+      if (sesiArr.length > 0) {
+        if (sesiArr.length > 4) {
+          const visible = sesiArr.slice(0, 4).map(function(s) { return '<span class="tag">' + escapeHtml(s) + '</span>'; }).join('');
+          const hidden = sesiArr.slice(4).join(', ');
+          sesiTags = visible + `<span class="tag" style="background:var(--border-light); color:var(--text-secondary); cursor:help;" title="${escapeHtml(hidden)}">+${sesiArr.length - 4} sesi</span>`;
+        } else {
+          sesiTags = sesiArr.map(function(s) { return '<span class="tag">' + escapeHtml(s) + '</span>'; }).join('');
+        }
+      }
 
       return `<tr>
         <td>${idx + 1}</td>
         <td><strong>${escapeHtml(g.nama || '')}</strong></td>
         <td>${escapeHtml(g.mapel || '')}</td>
         <td>${escapeHtml(g.noHp || '')}</td>
-        <td><span style="font-size:0.75rem; font-weight:500; color:var(--text-secondary)">${escapeHtml(kelasWithQuotas || '-')}</span></td>
+        <td><span style="font-size:0.75rem; font-weight:500; color:var(--text-secondary)">${kelasWithQuotasHtml}</span></td>
         <td><div class="tag-list">${hariTags || '-'}</div></td>
         <td><div class="tag-list">${sesiTags || '-'}</div></td>
         <td>
