@@ -2489,3 +2489,40 @@ input:focus:not(:focus-visible) {
   color: var(--text-secondary);
   margin-top: var(--sp-1);
 }
+
+/* Monitor Booking Grouping */
+.monitor-booking-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.monitor-booking-pill {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  font-size: 0.75rem;
+}
+
+.monitor-booking-pill__info {
+  padding: 4px 8px;
+  color: var(--text);
+}
+
+.monitor-booking-pill__btn {
+  background: var(--danger-light);
+  color: var(--danger);
+  padding: 4px 8px;
+  font-weight: bold;
+  border-left: 1px solid var(--border);
+  cursor: pointer;
+  transition: background var(--duration-fast);
+}
+
+.monitor-booking-pill__btn:hover {
+  background: var(--danger);
+  color: #fff;
+}

@@ -1143,21 +1143,57 @@ const Components = (function () {
 
   /* ---------- Admin: Monitor Booking ---------- */
   function renderAdminMonitorTab(bookings) {
-    const rows = (bookings || []).map(function (b, idx) {
-      return `<tr>
-        <td>${idx + 1}</td>
-        <td><strong>${escapeHtml(b.guruNama || '')}</strong></td>
-        <td>${escapeHtml(b.mapel || '')}</td>
-        <td>${escapeHtml(b.hari || '')}</td>
-        <td>${escapeHtml(b.sesiNama || b.sesi || '')}</td>
-        <td>${escapeHtml(b.kelas || '')}</td>
-        <td>
-          <button class="btn btn--danger btn--sm" data-action="force-release" data-booking-id="${escapeHtml(b.id || '')}" data-booking-info="${escapeHtml(b.guruNama + ' - ' + b.kelas)}">
-            Lepas
-          </button>
-        </td>
-      </tr>`;
-    }).join('');
+    const guruMap = {};
+    (bookings || []).forEach(function(b) {
+      const guruKey = b.guruNama + '_' + b.mapel;
+      if (!guruMap[guruKey]) {
+        guruMap[guruKey] = {
+          nama: b.guruNama,
+          mapel: b.mapel,
+          bookings: []
+        };
+      }
+      guruMap[guruKey].bookings.push(b);
+    });
+
+    const guruKeys = Object.keys(guruMap).sort();
+    let rows = '';
+    
+    if (guruKeys.length === 0) {
+      rows = '<tr><td colspan="3" class="text-center text-secondary p-6">Belum ada booking</td></tr>';
+    } else {
+      rows = guruKeys.map(function(key, idx) {
+        const guru = guruMap[key];
+        
+        // Urutkan booking berdasarkan hari lalu sesi
+        guru.bookings.sort(function(a, b) {
+          const hariA = CONFIG.HARI.indexOf(a.hari);
+          const hariB = CONFIG.HARI.indexOf(b.hari);
+          if (hariA !== hariB) return hariA - hariB;
+          return (a.sesiMulai || a.sesiNama || '').localeCompare(b.sesiMulai || b.sesiNama || '');
+        });
+
+        const bookingPills = guru.bookings.map(function(b) {
+          return `<div class="monitor-booking-pill">
+            <div class="monitor-booking-pill__info"><strong>${escapeHtml(b.hari || '')}</strong> - ${escapeHtml(b.sesiNama || b.sesi || '')} (${escapeHtml(b.kelas || '')})</div>
+            <button class="monitor-booking-pill__btn" data-action="force-release" data-booking-id="${escapeHtml(b.id || '')}" data-booking-info="${escapeHtml(b.guruNama + ' - ' + b.kelas)}" title="Lepas Booking">✕</button>
+          </div>`;
+        }).join('');
+
+        return `<tr>
+          <td style="width: 50px; vertical-align: top; padding-top: var(--sp-4);">${idx + 1}</td>
+          <td style="width: 200px; vertical-align: top; padding-top: var(--sp-4);">
+            <strong>${escapeHtml(guru.nama || '')}</strong>
+            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">${escapeHtml(guru.mapel || '')}</div>
+          </td>
+          <td style="vertical-align: top; padding-top: var(--sp-4); padding-bottom: var(--sp-4);">
+            <div class="monitor-booking-list">
+              ${bookingPills}
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
 
     return `
       <div class="admin-content__header">
@@ -1169,16 +1205,12 @@ const Components = (function () {
           <thead>
             <tr>
               <th>#</th>
-              <th>Guru</th>
-              <th>Mapel</th>
-              <th>Hari</th>
-              <th>Sesi</th>
-              <th>Kelas</th>
-              <th>Aksi</th>
+              <th>Guru & Mapel</th>
+              <th>Daftar Jadwal (Hari - Sesi - Kelas)</th>
             </tr>
           </thead>
           <tbody>
-            ${rows || '<tr><td colspan="7" class="text-center text-secondary p-6">Belum ada booking</td></tr>'}
+            ${rows}
           </tbody>
         </table>
       </div>
