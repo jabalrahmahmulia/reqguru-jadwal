@@ -26,7 +26,8 @@ const api = (function () {
       hariAllowed: g.hariAllowed || g.Hari_Allowed || '',
       sesiAllowed: g.sesiAllowed || g.Sesi_Allowed || '',
       status: g.status || g.Status || 'Aktif',
-      noHp: g.noHp || ''
+      noHp: g.noHp || '',
+      pin: g.PIN || g.pin || ''
     };
   }
 
@@ -150,11 +151,11 @@ const api = (function () {
     }
   }
 
-  /** Login guru: nama + noHp */
-  async function loginGuru(nama, noHp) {
+  /** Login guru: nama + noHp + pin */
+  async function loginGuru(nama, noHp, pin) {
     showLoading('Memverifikasi...');
     try {
-      const res = await post('loginGuru', { nama: nama, noHp: noHp });
+      const res = await post('loginGuru', { nama: nama, noHp: noHp, pin: pin });
       showToast('Login berhasil! Selamat datang, ' + escapeHtml(nama), 'success');
       return normalizeGuru(res.data || res);
     } catch (err) {

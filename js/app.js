@@ -545,9 +545,20 @@
         if (e.target.id === 'guru-phone') {
           const loginBtn = $('#btn-guru-login');
           const selectedId = $('#guru-selected-id');
+          const pinInput = $('#guru-pin');
           if (loginBtn) {
-            loginBtn.disabled = !(selectedId && selectedId.value && isValidPhone(val));
+            loginBtn.disabled = !(selectedId && selectedId.value && isValidPhone(val) && pinInput && pinInput.value.length === 6);
           }
+        }
+      } else if (e.target.id === 'guru-pin') {
+        let val = e.target.value.replace(/\D/g, '');
+        e.target.value = val;
+        
+        const loginBtn = $('#btn-guru-login');
+        const selectedId = $('#guru-selected-id');
+        const phoneInput = $('#guru-phone');
+        if (loginBtn) {
+           loginBtn.disabled = !(selectedId && selectedId.value && isValidPhone(phoneInput ? phoneInput.value : '') && val.length === 6);
         }
       } else if (e.target.id === 'admin-guru-search') {
         const query = e.target.value.trim().toLowerCase();
@@ -740,6 +751,8 @@
     if (selectedName) selectedName.value = item.dataset.guruName;
     if (autocomplete) autocomplete.classList.remove('show');
     if (phoneGroup) phoneGroup.style.display = '';
+    const pinGroup = $('#pin-group');
+    if (pinGroup) pinGroup.style.display = '';
 
     const phoneInput = $('#guru-phone');
     if (phoneInput) {
@@ -758,6 +771,7 @@
     const selectedId = $('#guru-selected-id');
     const selectedName = $('#guru-selected-name');
     const phoneInput = $('#guru-phone');
+    const pinInput = $('#guru-pin');
 
     if (!selectedId || !selectedId.value) {
       showToast('Silakan pilih nama guru terlebih dahulu', 'warning');
@@ -767,8 +781,12 @@
       showToast('Masukkan nomor HP yang valid (format 8xxxxxx)', 'warning');
       return;
     }
+    if (!pinInput || pinInput.value.length !== 6) {
+      showToast('Masukkan PIN 6 digit yang valid', 'warning');
+      return;
+    }
 
-    const result = await api.loginGuru(selectedName.value, phoneInput.value);
+    const result = await api.loginGuru(selectedName.value, phoneInput.value, pinInput.value);
     if (result) {
       state.currentGuru = result;
       // Store the noHp for booking/release authentication
@@ -1106,10 +1124,15 @@
     const nama = form.querySelector('[name="nama"]').value.trim();
     const mapel = form.querySelector('[name="mapel"]').value.trim();
     const noHp = form.querySelector('[name="noHp"]').value.trim();
+    const pin = form.querySelector('[name="pin"]').value.trim();
     const kuota = parseInt(form.querySelector('[name="kuota"]').value) || 0;
 
-    if (!nama || !mapel || !noHp) {
-      showToast('Nama, Mapel, dan No. HP wajib diisi', 'warning');
+    if (!nama || !mapel || !noHp || !pin) {
+      showToast('Nama, Mapel, No. HP, dan PIN wajib diisi', 'warning');
+      return;
+    }
+    if (pin.length !== 6 || isNaN(pin)) {
+      showToast('PIN harus 6 digit angka', 'warning');
       return;
     }
 
@@ -1139,6 +1162,7 @@
       nama: nama,
       mataPelajaran: mapel,
       noHp: noHp,
+      pin: pin,
       kuotaSesi: kuota,
       kelas: kelasAllowed.length ? kelasAllowed.join(', ') : CONFIG.KELAS.join(', '),
       hariAllowed: hariAllowed.length ? hariAllowed.join(', ') : '',

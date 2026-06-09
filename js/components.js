@@ -104,7 +104,7 @@ const Components = (function () {
             <div class="login-header">
               <div class="login-header__icon">👨‍🏫</div>
               <h2 class="login-header__title">Login Guru</h2>
-              <p class="login-header__desc">Cari nama Anda dan masukkan nomor HP</p>
+              <p class="login-header__desc">Cari nama Anda, masukkan nomor HP dan PIN</p>
             </div>
 
             <div class="form-group">
@@ -124,6 +124,12 @@ const Components = (function () {
               <label class="form-label">Nomor HP</label>
               <input type="tel" class="form-input form-input--lg" id="guru-phone" placeholder="8xxxxxxxxxx" maxlength="15" />
               <p class="form-hint">Format: 8xxxxxxxxxx (tanpa angka 62 atau 0 di depan)</p>
+            </div>
+
+            <div class="form-group" id="pin-group" style="display:none">
+              <label class="form-label">PIN</label>
+              <input type="password" class="form-input form-input--lg" id="guru-pin" placeholder="••••••" maxlength="6" inputmode="numeric" />
+              <p class="form-hint">Masukkan 6 digit PIN (Default: 123456)</p>
             </div>
 
             <button class="btn btn--primary btn--lg btn--block" id="btn-guru-login" disabled>
@@ -933,6 +939,10 @@ const Components = (function () {
         <div class="form-group">
           <label class="form-label">No. HP *</label>
           <input type="tel" class="form-input" name="noHp" value="${isEdit ? escapeHtml(guru.noHp || '') : ''}" required placeholder="8xxxxxxxxxx" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">PIN *</label>
+          <input type="text" class="form-input" name="pin" value="${isEdit ? escapeHtml(guru.pin || '123456') : '123456'}" required placeholder="123456" maxlength="6" inputmode="numeric" />
         </div>
         <input type="hidden" name="kuota" value="0" />
         <div class="form-group">
