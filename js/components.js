@@ -1236,7 +1236,10 @@ const Components = (function () {
     return `
       <div class="admin-content__header">
         <h2>📡 Monitor Booking</h2>
-        <button class="btn btn--secondary btn--sm" data-action="refresh-monitor">🔄 Refresh</button>
+        <div style="display: flex; gap: var(--sp-2); flex-wrap: wrap;">
+          <button class="btn btn--secondary btn--sm" data-action="refresh-monitor">🔄 Refresh</button>
+          <button class="btn btn--danger btn--sm" data-action="bulk-release">⚠️ Lepas Semua Sesi</button>
+        </div>
       </div>
       <div class="data-table-wrapper">
         <table class="data-table">
@@ -1527,6 +1530,26 @@ const Components = (function () {
   }
 
   /* ==========================================================
+     BULK RELEASE CONFIRM MODAL
+     ========================================================== */
+  function renderBulkReleaseModal() {
+    return renderModal('Lepas Semua Sesi', `
+      <div style="text-align:center">
+        <div class="confirm-icon confirm-icon--danger">⚠️</div>
+        <p style="font-size:0.95rem;color:var(--text-secondary)">
+          Apakah Anda yakin ingin <strong>melepaskan paksa semua sesi</strong> booking?
+        </p>
+        <p style="font-size:0.82rem;color:var(--danger);margin-top:var(--sp-2);font-weight:bold;">
+          Tindakan ini akan menghapus semua sesi yang telah dibooking dan mengembalikan kuota semua guru. Tindakan ini tidak dapat dibatalkan!
+        </p>
+      </div>
+    `, `
+      <button class="btn btn--secondary" data-action="close-modal">Batal</button>
+      <button class="btn btn--danger" data-action="confirm-bulk-release">Ya, Lepas Semua</button>
+    `);
+  }
+
+  /* ==========================================================
      PUBLIC API
      ========================================================== */
   return {
@@ -1557,6 +1580,7 @@ const Components = (function () {
     renderAdminStatsTab: renderAdminStatsTab,
     renderDeleteConfirmModal: renderDeleteConfirmModal,
     renderForceReleaseModal: renderForceReleaseModal,
+    renderBulkReleaseModal: renderBulkReleaseModal,
     showModal: showModal,
     closeModal: closeModal,
     showBottomSheet: showBottomSheet,

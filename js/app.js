@@ -716,6 +716,14 @@
         handleConfirmForceRelease(el.dataset.bookingId);
         break;
 
+      case 'bulk-release':
+        handleBulkReleasePrompt();
+        break;
+
+      case 'confirm-bulk-release':
+        handleConfirmBulkRelease();
+        break;
+
       case 'refresh-monitor':
         loadAdminTab('monitor');
         break;
@@ -1512,6 +1520,23 @@
   async function handleConfirmForceRelease(bookingId) {
     Components.closeModal();
     const result = await api.forceRelease(bookingId, state.adminPin);
+    if (result) {
+      await loadAdminTab('monitor');
+    }
+  }
+
+  /* ==========================================================
+     ADMIN: BULK RELEASE
+     ========================================================== */
+  function handleBulkReleasePrompt() {
+    Components.showModal(
+      Components.renderBulkReleaseModal()
+    );
+  }
+
+  async function handleConfirmBulkRelease() {
+    Components.closeModal();
+    const result = await api.bulkRelease(state.adminPin);
     if (result) {
       await loadAdminTab('monitor');
     }
